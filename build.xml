@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="lsl">
+
+	<property name="python" location="d:/sam/python36/python.exe" />
+	<property name="pyz80" location="d:/sam/pyz80/pyz80 - copy.py" />
+	<property name="simcoupe" location="C:\Program Files (x86)\SimCoupe\SimCoupe.exe" />
+
+	<macrodef name="assemble">
+		<attribute name="source" />
+		<attribute name="obj" default="@{source}" />
+		<attribute name="mapfile" default="false" />
+
+		<sequential xmlns:if="ant:if">
+
+			<echo message="compiling: @{source} mapfile:@{mapfile}" />
+
+			<mkdir dir="obj" />
+
+			<exec executable="${python}" failonerror="true">
+				<arg value="${pyz80}" />
+				<arg value="--obj=obj/@{obj}" />
+				<arg value="--mapfile=obj/modplayer.map" if:true="@{mapfile}" />
+				<arg value="src/@{source}.s" />
+			</exec>
+
+		</sequential>
+
+	</macrodef>
+
+
+	<target name="assemble-agi">
+
+		<assemble source="agi" />
+
+	</target>
+
+	<target name="create-disk" depends="assemble-agi">
+
+		<exec executable="${python}" failonerror="true">
+			<arg value="${pyz80}" />
+			<arg value="-e" />
+			<arg value="-Idata\logdir" />
+			<arg value="-Idata\viewdir" />
+			<arg value="-Idata\picdir" />
+			<arg value="-Idata\snddir" />
+			<arg value="-Idata\words.tok" />
+			<arg value="-Idata\object" />
+			<arg value="-Idata\vol.0" />
+			<arg value="-Idata\vol.1" />
+			<arg value="-Idata\vol.2" />
+			<arg value="-Idata\object" />
+			<arg value="-oobj/lsl.dsk" />
+			<arg value="src/agi.s" />
+		</exec>
+
+	</target>
+
+	<target name="all" description="compile all, create disk and launch" depends="create-disk">
+
+		<exec executable="${simcoupe}">
+			<arg value="obj/lsl.dsk" />
+		</exec>
+
+	</target>
+
+	<target name="clean" description="clean obj">
+
+		<delete dir="obj" />
+		<mkdir dir="obj" />
+
+	</target>
+
+</project>
