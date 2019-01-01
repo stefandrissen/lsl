@@ -86,9 +86,9 @@ if defined(test-draw)
 		defb @draw.command.exit	
 	
 	
-	include "util\print.s"
-	include "util\keyboard.s"	
-	include "util\ports.s"	
+	include "util/print.s"
+	include "util/keyboard.s"	
+	include "util/ports.s"	
 	
 endif	
 
@@ -100,6 +100,8 @@ endif
 
 @var.priority.color:		defb 0
 @var.priority.draw.enabled:	defb 0
+
+@offset.to.center: equ 24
 
 draw.pic:
 
@@ -133,7 +135,7 @@ draw.pic:
 	ld b,168
 @cls:	
 	push bc
-	ld bc,24
+	ld bc,@offset.to.center
 	ld a,&00
 	ld (hl),a
 	ldir	
@@ -141,7 +143,7 @@ draw.pic:
 	ld a,&ff
 	ld (hl),a
 	ldir
-	ld bc,24
+	ld bc,@offset.to.center
 	ld a,&00
 	ld (hl),a
 	ldir
@@ -156,37 +158,7 @@ draw.pic:
 	ld ix,(var.resource.start)	; ignoring any parameter and just using last loaded pic
 @loop:	
 
-	if defined(debug)
-		xor a
-		ld (util.print.x),a
-		inc a
-		ld (util.print.y),a
-		push ix
-		pop hl
-		ld a,h
-		call util.print.hex
-		ld a,l
-		call util.print.hex
-		ld a,":"
-		call util.print.char	
-		ld a,(ix)	
-		call util.print.hex
-	endif
-
 	ld a,(ix)		
-	
-	if defined(pause)
-		call util.print.reset
-		call util.print.hex
-		push af
-		ld a,(ix+1)
-		call util.print.hex
-		ld a,(ix+2)
-		call util.print.hex
-		pop af
-		call util.keyboard.pause
-	endif
-	
 	inc ix	
 	
 	sub &f0
@@ -216,7 +188,59 @@ draw.pic:
 	
 	pop hl	; toss @loop
 	jr @exit
+
+
+if defined(debug)
+
+	@pause:
 	
+		push af
+		push hl
+		push de
+	
+		ld a,(@var.picture.draw.enabled)
+		or a
+		jr z,@no.pause
+		
+		push ix
+		pop hl
+		ld de,&9633
+		sbc hl,de
+		jr c,@no.pause
+		add hl,de
+
+		call util.print.reset		
+		
+		ld a,h
+		call util.print.hex
+		ld a,l
+		call util.print.hex
+		ld a,":"
+		call util.print.char	
+		ld a,(ix)	
+		call util.print.hex
+		
+		ld a,chr_linefeed
+		call util.print.char
+		ld a,chr_linefeed
+		call util.print.char
+		
+		ld a,(ix+1)
+		call util.print.hex
+		ld a," "
+		call util.print.char
+		ld a,(ix+2)
+		call util.print.hex
+		call util.keyboard.pause
+	@no.pause:		
+		
+		pop de
+		pop hl
+		pop af
+		
+		ret
+
+endif	
 	
 @err.picture:
 
@@ -266,7 +290,7 @@ draw.pic:
 ; EGA 0-63 per channel, SAM 0-3 per channel (+ bright) 
 
 @palette:			; Code  Color             R    G    B
-		; GRB!GRB	  ----- ---------------- ---- ---- ----
+		; GRB!grb	  ----- ---------------- ---- ---- ----
 	defb %0000000	;   0   black            0x00,0x00,0x00
 	defb %0010000	;   1   blue             0x00,0x00,0x2A
 	defb %1000000	;   2   green            0x00,0x2A,0x00
@@ -386,131 +410,223 @@ draw.pic:
 ; The remaining arguments are in groups of two which give the coordinates of the next location to draw a line to. 
 ; There can be any number of arguments but there should always be an even number.
 
-	ld e,(ix+0)	; x0
-	ld d,(ix+1)	; y0
+	ld e,(ix+0)	; picX1
+	ld d,(ix+1)	; picY1	
 	
 	call @plot.xy
+
 @al.next:
+
 	inc ix
 	inc ix
 	
-	ld a,(ix+0)	; x1	
+	ld a,(ix+0)	; picX2	
 	cp &f0
-	ret nc	
+	ret nc
 	
-	; first determine x or y line - line steps by 1 pixel on largest axis, the other axis is fractional
+	cp e
+	jp z,@VLineDraw
 	
-	sub e
-	ld l,0
-	jr z,@ok1
-	ld l,1
-	jr nc,@ok1
-	ld l,-1
-	ld a,e
-	sub (ix)
-@ok1:	
-	ld (@var.dx),a
-	ld c,a	; c = absolute x1 - x2
+	ld a,(ix+1) ; picY2
+	cp d
+	jp z,@HLineDraw
 	
+	ld a,(ix+0) ; picX2
+	sub e		; picX1
+	ld (@var.xDiff),a
+	jr nc,@else.1
+	neg 
+	ld (@var.xDiff),a
+	ld a,-1
+	jr @endif.1
+@else.1:
+	ld a,1
+@endif.1:
+	ld (@var.dirX),a
+
+	ld a,(ix+1) ; picY2
+	sub d		; picY1
+	ld (@var.yDiff),a
+	jr nc,@else.2
+	neg
+	ld (@var.yDiff),a
+	ld a,-1
+	jr @endif.2
+@else.2:
+	ld a,1	
+@endif.2:
+	ld (@var.dirY),a
+	
+	ld a,(@var.yDiff)
+	ld b,a
+	ld a,(@var.xDiff)
+	sub b
+	jr nc,@else.3
+	ld a,b	; yDiff
+	ld (@var.lineLen),a
+	ld (@var.wide),a
+	srl a
+	ld (@var.dcX),a
+	jr @endif.3	
+@else.3:	
+	ld a,(@var.xDiff)
+	ld (@var.lineLen),a
+	ld (@var.wide),a
+	srl a
+	ld (@var.dcY),a			
+@endif.3:			
+	 
+@do:
+	ld a,(@var.xDiff)
+	ld b,a
+	ld a,(@var.dcX)
+	add b
+	ld (@var.dcX),a
+	ld c,a
+	ld a,(@var.wide)
+	ld b,a
+	ld a,c
+	sub b
+	jr c,@endif.4	
+	
+	ld (@var.dcX),a
+	ld a,(@var.dirX)
+	add e
+	ld e,a
+	
+@endif.4:
+
+
+	ld a,(@var.yDiff)
+	ld b,a
+	ld a,(@var.dcY)
+	add b
+	ld (@var.dcY),a
+	ld c,a
+	ld a,(@var.wide)
+	ld b,a
+	ld a,c
+	sub b
+	jr c,@endif.5
+	
+	ld(@var.dcY),a
+	ld a,(@var.dirY)
+	add d
+	ld d,a
+	
+@endif.5:	
+	
+	call @plot.xy
+	
+	ld a,(@var.lineLen)
+	dec a
+	ld (@var.lineLen),a
+	
+	jr nz,@do
+	
+	ld (@var.wide),a
+	ld (@var.lineLen),a
+	ld (@var.dirX),a
+	ld (@var.dirY),a
+	ld (@var.xDiff),a
+	ld (@var.yDiff),a
+	ld (@var.dcX),a
+	ld (@var.dcY),a
+
+	jp @al.next		
+	
+@VLineDraw:
+
 	ld a,(ix+1)
 	sub d
-	ld h,0
-	jr z,@ok2
-	ld h,1
-	jr nc,@ok2
-	ld h,-1
+	jp z,@al.next
+	
+	jr nc,@VLineDrawDown
+	
 	ld a,d
 	sub (ix+1)
-@ok2:		; a = absolute y1 - y2
-	ld (@var.dy),a
-	sub c
-	jr nc,@y.line	; ydif > xdif
-	
-	
-	; move along x-axis one pixel at a time, with y changing with fraction
-@x.line:
-
-	; see https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
-	
-	ld a,(@var.dx)
 	ld b,a
-	ld a,(@var.dy)
-	sub b
-	ld (@var.D),a	
-
-@x.loop:
-	ld a,e
-	cp (ix+0)
-	jr z,@al.next
-
-	add a,l
-	ld e,a		
-	
-	ld a,(@var.D)
-	bit 7,a
-	jr nz,@negd
-	ld b,a
-	ld a,d
-	add a,h	; h = 1 / -1
-	ld d,a	
-	ld a,(@var.dx)
-	ld c,a
-	ld a,b
-	sub c
-@negd:	
-	ld c,a
-	ld a,(@var.dy)
-	add a,c
-	ld (@var.D),a
-	
-	call @plot.xy		
-	
-	jr @x.loop
-
-	; move along y-axis one pixel at a time, with x changing with fraction
-@y.line:
-
-	ld a,(@var.dy)
-	ld b,a
-	ld a,(@var.dx)
-	sub b
-	ld (@var.D),a	
-
-@y.loop:
-
-	ld a,d
-	cp (ix+1)
-	jr z,@al.next
-	
-	add a,h
-	ld d,a	
-
-	ld a,(@var.D)
-	bit 7,a
-	jr nz,@negd
-	ld b,a
-	ld a,e
-	add a,l	; l = 1 / -1
-	ld e,a
-	ld a,(@var.dy)
-	ld c,a
-	ld a,b
-	sub c
-@negd:	
-	ld c,a
-	ld a,(@var.dx)
-	add a,c
-	ld (@var.D),a
-
+@loop.1:
+	dec d
 	call @plot.xy
+	djnz @loop.1
+	jp @al.next	
+	
+@VLineDrawDown:
+	
+	ld b,a
+@loop.2:
+	inc d
+	call @plot.xy
+	djnz @loop.2	
+	jp @al.next	
 
-	jr @y.loop
+@HLineDraw:
 
+	ld a,(ix+0)
+	sub e
+	jr nc,@HLineDrawRight
+	
+	ld a,e
+	sub (ix+0)
+	ld b,a
+@loop.3:
+	dec e
+	call @plot.xy
+	djnz @loop.3
+	jp @al.next
+	
+@HLineDrawRight:
+
+	ld b,a
+@loop.4:
+	inc e
+	call @plot.xy
+	djnz @loop.4
+	jp @al.next
+				
+
+@var.wide:		defb 0
+@var.lineLen:	defb 0
+@var.dirX:		defb 0
+@var.dirY:		defb 0
+@var.xDiff:		defb 0
+@var.yDiff:		defb 0
+@var.dcX:		defb 0
+@var.dcY:		defb 0
+
+if defined(debug)
+
+	@error.out.of.bounds:
+
+	ld hl,@text.error
+	call util.print.string	
+	ld a,e
+	call util.print.hex
+	ld a,d
+	call util.print.hex
+	
+	jp @pause
+
+endif
 	
 @plot.xy:
 
 	;e = x [ 0-159 ]
-	;d = y [ 0-199 ]	
+	;d = y [ 0-199 ]
+	
+	if defined(debug)
+	
+		ld a,e
+		cp 160
+		jr nc,@error.out.of.bounds
+		
+		ld a,d
+		cp 200
+		jr nc,@error.out.of.bounds
+	
+	endif
+		
 	
 	ld a,(@var.picture.draw.enabled)
 	or a
@@ -521,7 +637,7 @@ draw.pic:
 
 	ld a,e
 	srl a
-	add 24	;offset to center 
+	add @offset.to.center 
 	ld l,a
 
 	ld a,d
@@ -784,7 +900,7 @@ draw.pic:
 
 	ld a,e
 	srl a
-	add 24	;offset to center
+	add @offset.to.center
 	ld l,a
 
 	ld a,d

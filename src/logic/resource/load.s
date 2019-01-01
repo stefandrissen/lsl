@@ -5,7 +5,7 @@
 ; a  = resource
 ; hl = resource directory
 
-include "util\samdos.s"
+include "../../util/samdos.s"
 
 var.resource.start:		defw 0	; start address of last loaded resource
 var.resource.length:	defw 0	; length of last loaded resource

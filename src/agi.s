@@ -8,9 +8,14 @@
 ; documentation:
 ;	http://wiki.scummvm.org/index.php/AGI/Specifications
 ;
-;	
+; gba c implementation based on disassembly of original:
+;   http://web.archive.org/web/20080509121504/http://www.bripro.com/gbagi/index.php
+;
+; javascript implementation:
+;   https://github.com/r1sc/agi.js
+;
 
-	include "util\ports.s"
+	include "util/ports.s"
 
 	org 32768
 	dump 1,0
@@ -21,7 +26,6 @@ autoexec
 	ld (store.sp),sp
 	ld sp,0
 	
-	ld a,1
 	;  1 = land of the lounge lizards
 	;  2 = credits 1
 	;  3 = credits 2 
@@ -68,11 +72,11 @@ autoexec
 	; 44 = penthouse - living room
 	; 45 = penthouse - bed room
 	
-	
-	
+	ld a,1
 	ld b,45
+	
 	if defined(debug)
-		ld a,41
+		ld a,1
 		ld b,1
 	endif
 
@@ -95,14 +99,14 @@ autoexec
 	
 store.sp: defw 0
 	
-	include "logic\pic\load.s"
-	include "logic\pic\draw.s"
-	include "logic\pic\discard.s"
-	include "logic\pic\show.s"	
+	include "logic/pic/load.s"
+	include "logic/pic/draw.s"
+	include "logic/pic/discard.s"
+	include "logic/pic/show.s"	
 	
-	include "util\print.s"
-	include "util\keyboard.s"
-	include "logic\resource\load.s"
+	include "util/print.s"
+	include "util/keyboard.s"
+	include "logic/resource/load.s"
 	
 ; variables
 ; - 26 reserved variables
