@@ -1,27 +1,73 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="lsl">
+<project name="samagi">
 
 	<property environment="env" />
 
-	<property name="python" location="d:/sam/python36/python.exe" />
+	<property name="python" location="../../AppData/Local/Programs/Python/Python38/python.exe" />
 	<property name="pyz80" location="../pyz80/pyz80.py" />
 	<property name="simcoupe" location="${env.ProgramFiles(x86)}/SimCoupe/SimCoupe.exe" />
 
-	<macrodef name="assemble">
-		<attribute name="source" />
-		<attribute name="obj" default="@{source}" />
-		<attribute name="mapfile" default="false" />
+	<!-- assemble -->
 
+	<macrodef name="assemble">
+		<attribute name="source" default="main" />
+		<attribute name="import-symbols" default="false" />
+		<attribute name="debug" default="false" />
+		<attribute name="debug-actions" default="false" />
 		<sequential xmlns:if="ant:if">
 
-			<echo message="compiling: @{source} mapfile:@{mapfile}" />
-
-			<mkdir dir="obj" />
+			<echo message="assembling '@{source}'" />
 
 			<exec executable="${python}" failonerror="true">
 				<arg value="${pyz80}" />
-				<arg value="--obj=obj/@{obj}" />
-				<arg value="--mapfile=obj/@{source}.map" if:true="@{mapfile}" />
+				<arg line="-D debug" if:true="@{debug}" />
+				<arg line="-D debug-actions" if:true="@{debug-actions}" />
+				<arg value="--importfile=obj/symbols" if:true="@{import-symbols}" />
+				<arg value="--exportfile=obj/symbols" />
+				<arg value="--obj=obj/@{source}" />
+				<!-- <arg value="-e" /> -->
+				<arg value="--mapfile=obj/@{source}.map" />
+				<arg value="src/@{source}.s" />
+			</exec>
+
+		</sequential>
+	</macrodef>
+
+	<!-- create-disk -->
+
+	<macrodef name="create-disk">
+		<attribute name="source" default="main" />
+		<attribute name="additional.1" default="" />
+		<attribute name="additional.2" default="" />
+		<attribute name="additional.3" default="" />
+		<attribute name="import-symbols" default="false" />
+		<attribute name="game" />
+		<attribute name="debug" default="false" />
+
+		<sequential xmlns:if="ant:if" xmlns:unless="ant:unless">
+
+			<echo message="create-disk '@{source}'" />
+
+			<exec executable="${python}" failonerror="true">
+				<arg value="${pyz80}" />
+				<arg line="-I gamefiles/@{game}/logdir" />
+				<arg line="-I gamefiles/@{game}/viewdir" />
+				<arg line="-I gamefiles/@{game}/picdir" />
+				<arg line="-I gamefiles/@{game}/snddir" />
+				<arg line="-I gamefiles/@{game}/words.tok" />
+				<arg line="-I gamefiles/@{game}/object" />
+				<arg line="-I gamefiles/@{game}/vol.0" />
+				<arg line="-I gamefiles/@{game}/vol.1" />
+				<arg line="-I gamefiles/@{game}/vol.2" />
+				<arg line="-I gamefiles/@{game}/object" />
+				<arg line="-I obj/@{additional.1}" unless:blank="@{additional.1}" />
+				<arg line="-I obj/@{additional.2}" unless:blank="@{additional.2}" />
+				<arg line="-I obj/@{additional.3}" unless:blank="@{additional.3}" />
+				<arg line="--importfile=obj/symbols" if:true="@{import-symbols}" />
+				<arg line="-o obj/@{game}.dsk" />
+				<arg line="-D debug" if:true="@{debug}" />
+				<arg line="-D xdebug-actions" if:true="@{debug}" />
+				<arg value="--mapfile=obj/@{game}.map" />
 				<arg value="src/@{source}.s" />
 			</exec>
 
@@ -29,60 +75,50 @@
 
 	</macrodef>
 
-	<macrodef name="create-disk">
-		<attribute name="debug" default="false" />
+	<macrodef name="samagi">
+		<attribute name="game" />
 
-		<sequential xmlns:if="ant:if">
+		<sequential>
 
-			<exec executable="${python}" failonerror="true">
-				<arg value="${pyz80}" />
-				<arg value="-e" />
-				<arg line="-I data/logdir" />
-				<arg line="-I data/viewdir" />
-				<arg line="-I data/picdir" />
-				<arg line="-I data/snddir" />
-				<arg line="-I data/words.tok" />
-				<arg line="-I data/object" />
-				<arg line="-I data/vol.0" />
-				<arg line="-I data/vol.1" />
-				<arg line="-I data/vol.2" />
-				<arg line="-I data/object" />
-				<arg line="-o obj/lsl.dsk" />
-				<arg line="-D debug" if:true="@{debug}" />
-				<arg value="--mapfile=obj/lsl.map" if:true="@{debug}" />
-				
-				<arg value="src/agi.s" />
+			<assemble source="boot" debug="true" />
+			<assemble source="view" debug="true" import-symbols="true" />
+			<assemble source="pic" debug="true" import-symbols="true" />
+			<assemble source="main" debug="true" debug-actions="false" import-symbols="true" />
+
+			<create-disk game="@{game}" source="boot" additional.1="main" additional.2="view" additional.3="pic" import-symbols="true" />
+
+			<concat destfile="obj/@{game}.map" append="true">
+				<fileset dir="obj" includes="view.map main.map" />
+			</concat>
+
+			<exec executable="${simcoupe}">
+				<arg value="obj/@{game}.dsk" />
 			</exec>
 
 		</sequential>
-
 	</macrodef>
 
-	<target name="create-disk">
+	<target name="lllll" description="Leisure Suit Larry In The Land Of The Lounge Lizards">
 
-		<create-disk />
-
-	</target>
-
-	<target name="create-disk-debug">
-
-		<create-disk debug="true" />
+		<samagi game="lllll" />
 
 	</target>
 
-	<target name="all" description="compile all, create disk and launch" depends="create-disk">
+	<target name="sq1" description="Space Quest: The Sarien Encounter">
 
-		<exec executable="${simcoupe}">
-			<arg value="obj/lsl.dsk" />
-		</exec>
+		<samagi game="sq1" />
 
 	</target>
 
-	<target name="all-debug" description="compile all debug mode, create disk and launch" depends="create-disk-debug">
+    <target name="sq2" description="Space Quest II: Vohaul's Revenge">
 
-		<exec executable="${simcoupe}">
-			<arg value="obj/lsl.dsk" />
-		</exec>
+        <samagi game="sq2" />
+
+    </target>
+	
+	<target name="pq1" description="Police Quest: In Pursuit of the Death Angel">
+
+		<samagi game="pq1" />
 
 	</target>
 
