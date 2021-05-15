@@ -42,8 +42,6 @@
 ; maybe put sound + pic in own pages too with code at start
 ;-------------------------------------------------------------------------------
 
-@screen.length:             equ 0x6000   ; 256 * 192 * 0.5
-
     include "memory.i"
     include "util/ports.i"
 
@@ -59,21 +57,22 @@
 
     include "section.i"
 
-    align 0x100
-
-stack:
+;-------------------------------------------------------------------------------
 
 @main.init.low:
 
     in a,(port.hmpr)
     ld (@store.hmpr+1),a
 
+    ld hl,main.update.frames
+    call @set.interrupt.handlers
+
+    ei
+
     ld a,page.screen
     out (port.hmpr),a
     or video.mode.4
     out (port.vmpr),a
-
-;    call resource.load.directories
 
     ; load logic script 0
 
@@ -97,7 +96,7 @@ stack:
 
 main.game.loop:
 
-    ; 1. delay time
+    ; 1. delay time - TODO updated elapsed time
     ; 2. clear keyboard buffer
     ; 3. poll keyboard and joystick
     ; 4. variable analysis
@@ -148,6 +147,31 @@ endif
 
     ret
 
+
+;-------------------------------------------------------------------------------
+@set.interrupt.handlers:
+
+    ld (maskable.interrupt.handler + 1),hl
+
+    ld a,page.view
+    call @set.interrupt.handler
+
+    ld a,page.pic
+    call @set.interrupt.handler
+
+    ld a,page.snd
+    call @set.interrupt.handler
+
+    ret
+
+;-------------------------------------------------------------------------------
+@set.interrupt.handler:
+
+    out (port.hmpr),a
+    ld (maskable.interrupt.handler + 0x8001),hl
+
+    ret
+
 ;-------------------------------------------------------------------------------
 
     include "error.s"
@@ -164,6 +188,52 @@ endif
     include "util/print.s"
     include "util/keyboard.s"
 ;    include "list.s"
+
+;===============================================================================
+    org $ + 0x8000
+main.update.frames:
+; paged in high and called by maskable.interrupt.handler
+;-------------------------------------------------------------------------------
+
+    push hl
+
+    ld hl,var.frames
+    inc (hl)
+    ld a,50
+    cp (hl)
+    jr nz,@done
+
+    ld (hl),0
+    ld hl,var.seconds + 0x8000
+    inc (hl)
+    ld a,60
+    cp (hl)
+    jr nz,@done
+
+    ld (hl),0
+    inc l       ; minutes
+    inc (hl)
+    cp (hl)
+    jr nz,@done
+
+    ld (hl),0
+    inc l       ; hours
+    inc (hl)
+    ld a,24
+    cp (hl)
+    jr nz,@done
+
+    ld (hl),0
+    inc l       ; days
+    inc (hl)
+@done:
+    pop hl
+
+    ret
+
+var.frames: defb 0  ; increased by interrupt, flows over to var.seconds
+
+    org $ - 0x8000
 
 ;-------------------------------------------------------------------------------
     ds align 0x100

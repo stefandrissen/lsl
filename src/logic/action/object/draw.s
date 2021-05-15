@@ -4,4 +4,11 @@
 
 logic.action.draw:
 
-    jp logic.action.nyi
+    ld b,(ix+0) ; oA
+
+    ld hl,view.draw
+    call section.call.object
+
+    inc ix
+
+    ret

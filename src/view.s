@@ -17,27 +17,9 @@
 
     jp 0
 
+;-------------------------------------------------------------------------------
+
     include "section.i"
-
-;-------------------------------------------------------------------------------
-    defs 0x0038 - $
-;-------------------------------------------------------------------------------
-masked.interrupt:
-
-    ret
-
-;-------------------------------------------------------------------------------
-    defs 0x0066 - $
-;-------------------------------------------------------------------------------
-non.masked.interrupt:
-
-    ret
-
-;-------------------------------------------------------------------------------
-
-    align 0x100
-
-stack:
 
 ;-------------------------------------------------------------------------------
 ; indicates if object [0x00-0x0f] is active
@@ -75,6 +57,13 @@ object.0:
 
     object.x:               defb 0  ; x position
     object.y:               defb 0  ; y position
+    object.prev.x:          defb 0
+    object.prev.y:          defb 0
+
+    object.width:           defb 0  ; x size (in pixels)
+    object.height:          defb 0  ; y size (in pixels)
+    object.prev.width:      defb 0  ;
+    object.prev.height:     defb 0  ;
 
     object.view:            defb 0  ; current view
     object.ptr.view:        defw 0  ; pointer to start of view data
@@ -87,13 +76,41 @@ object.0:
     object.cels:            defb 0  ; number of cels
     object.ptr.cel:         defw 0  ; pointer to start of cel data
 
-    object.cycle_time:      defb 0  ; cycle time (1/n gives the fraction of the maximum speed)
-    object.step_time:       defb 0  ; step time (1/n gives the fraction of the maximum speed)
-    object.width:           defb 0  ; x size (in pixels)
-    object.height:          defb 0  ; y size (in pixels)
-    object.step_size:       defb 0  ; step size
+    object.cycle:           defb 0
+        enum.cycle.normal:          equ 0
+        enum.cycle.end.of.loop:     equ 1
+        enum.cycle.reverse.loop:    equ 2
+        enum.cycle.reverse.cycle:   equ 3
+    object.cycle.time:      defb 0  ; cycle time (1/n gives the fraction of the maximum speed)
+    object.cycle.count:     defb 0
+
+    object.step.size:       defb 0  ; step size
+    object.step.time:       defb 0  ; step time (1/n gives the fraction of the maximum speed)
+    object.step.count:      defb 0
+
     object.direction:       defb 0  ; direction
+        enum.direction.stationary:  equ 0
+        enum.direction.north:       equ 1
+        enum.direction.north.east:  equ 2
+        enum.direction.east:        equ 3
+        enum.direction.south.east:  equ 4
+        enum.direction.south:       equ 5
+        enum.direction.south.west:  equ 6
+        enum.direction.west:        equ 7
+        enum.direction.north.west:  equ 8
+
+    object.motion:          defb 0
+        enum.motion.normal:         equ 0
+        enum.motion.wander:         equ 1
+        enum.motion.follow.ego:     equ 2
+        enum.motion.move.obj:       equ 3
+
+
     object.priority:        defb 0  ; priority
+
+    object.move.x:          defb 0
+    object.move.y:          defb 0
+    object.move.doneflag:   defb 0  ; flag to set when at destination
 
     object.flags:           defb 0  ; see below - 1 byte is enough
 
@@ -451,8 +468,20 @@ view.move.objects:
     ld a,(hl)
     or a
 
-    call nz,view.draw
+    jr z,@skip
 
+    push hl
+    push bc
+
+    ld a,l
+    call @object.get.iy
+
+    call view.draw
+
+    pop bc
+    pop hl
+
+@skip:
     inc l
 
     djnz @-loop
@@ -462,14 +491,7 @@ view.move.objects:
 ;===============================================================================
 view.draw:
 ; input
-;   l = object
-;-------------------------------------------------------------------------------
-
-    push hl
-    push bc
-
-    ld a,l
-    call @object.get.iy
+;   iy = object
 
     ld l,(iy+object.ptr.loop+0)
     ld h,(iy+object.ptr.loop+1)
@@ -492,6 +514,14 @@ view.draw:
 
     ; update object
 
+    inc (iy+object.cycle.count)
+    ld a,(iy+object.cycle.count)
+    cp (iy+object.cycle.time)
+    jr c,@no.cycle
+
+    ld a,0
+    ld (iy+object.cycle.count),a
+
     ld a,(iy+object.cel)
     inc a
     cp (iy+object.cels)
@@ -500,8 +530,23 @@ view.draw:
 @cels.gt.cel:
     ld (iy+object.cel),a
 
-    pop bc
-    pop hl
+@no.cycle:
+
+    inc (iy+object.step.count)
+    ld a,(iy+object.step.count)
+    cp (iy+object.step.time)
+    jr c,@no.step
+
+    ld a,0
+    ld (iy+object.step.count),a
+
+    ; TODO add direction
+    ; TODO check move
+    ld a,(iy+object.step.size)
+    add a,(iy+object.x)
+    ld (iy+object.x),a
+
+@no.step:
 
     ret
 
@@ -563,13 +608,13 @@ view.start.cycling:
 ;-------------------------------------------------------------------------------
 view.stop.cycling:
 
-    ld (iy+object.cycle_time),0 ; TODO correct?
+    ld (iy+object.cycle.time),0 ; TODO correct?
     ret
 
 ;-------------------------------------------------------------------------------
 view.cycle.time:
 
-    ld (iy + object.cycle_time),c
+    ld (iy + object.cycle.time),c
     ret
 
 ;-------------------------------------------------------------------------------
@@ -613,13 +658,13 @@ view.set.priority:
 ;-------------------------------------------------------------------------------
 view.step.size:
 
-    ld (iy + object.step_size),c
+    ld (iy + object.step.size),c
     ret
 
 ;-------------------------------------------------------------------------------
 view.step.time:
 
-    ld (iy + object.step_time),c
+    ld (iy + object.step.time),c
     ret
 
 ;-------------------------------------------------------------------------------
@@ -661,6 +706,23 @@ view.set.loop:
     ld (iy + object.cels),a
 
     ld (iy + object.cel),0
+
+    ret
+
+;-------------------------------------------------------------------------------
+view.move.obj:
+
+    ld (iy + object.move.x),e
+    ld (iy + object.move.y),d
+    ld a,c
+    or a
+    jr z,@keep.step.size
+    ld (iy + object.step.size),c
+@keep.step.size:
+    ex af,af'
+    ld (iy + object.move.doneflag),a
+
+    ld (iy + object.motion),enum.motion.move.obj
 
     ret
 

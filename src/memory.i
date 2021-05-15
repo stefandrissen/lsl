@@ -3,6 +3,9 @@
 ; [function]    memory map
 ;---------------------------------------------------------------
 
+stack.top:              equ 0x0100
+stack.size:             equ 0x30
+
 page.heap:              equ 0   ; basic
 addr.heap:              equ 0x4000
 

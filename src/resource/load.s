@@ -97,6 +97,8 @@ resource.load:
     ld a,0
     out (port.hmpr),a
 
+    ei
+
     ret
 
 @err.invalid.resource:

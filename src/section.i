@@ -61,3 +61,41 @@ section.call.object:
     out (port.hmpr),a
 
     ret
+
+;-------------------------------------------------------------------------------
+    defs 0x0038 - $
+;-------------------------------------------------------------------------------
+maskable.interrupt:
+
+    push af
+
+    in a,(port.hmpr)
+    ld (@port.hmpr+1),a
+    ld a,page.main
+    out (port.hmpr),a
+maskable.interrupt.handler:
+    call 0  ; set to main.update.frames by set.interrupt.handler
+
+@port.hmpr:
+    ld a,0
+    out (port.hmpr),a
+
+    pop af
+
+    ei
+    ret
+
+;-------------------------------------------------------------------------------
+    defs 0x0066 - $
+;-------------------------------------------------------------------------------
+non.maskable.interrupt:
+
+    ret
+
+;-------------------------------------------------------------------------------
+
+    assert $ <= stack.top - stack.size
+
+    align 0x100
+
+

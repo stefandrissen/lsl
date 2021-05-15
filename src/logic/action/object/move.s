@@ -18,7 +18,24 @@
 
 logic.action.move.obj:
 
-    jp logic.action.nyi
+    ld b,(ix+0) ; oA
+
+    ld e,(ix+1) ; X
+    ld d,(ix+2) ; Y
+    ld c,(ix+3) ; STEPSIZE
+    ld a,(ix+4) ; fDONEFLAG
+    ex af,af'
+
+    ld hl,view.move.obj
+    call section.call.object
+
+    ld a,(ix+4) ; fDONEFLAG
+    call flag.reset
+
+    ld bc,5
+    add ix,bc
+
+    ret
 
 ;-------------------------------------------------------------------------------
 

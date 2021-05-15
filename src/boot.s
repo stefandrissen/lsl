@@ -139,8 +139,6 @@ obj.snddir:
 
     align 0x100
 
-stack:
-
 ;-------------------------------------------------------------------------------
 
 @boot.init.high:
@@ -151,7 +149,7 @@ stack:
     in a,(port.vmpr)
     ld (@store.vmpr+1),a
 
-    ld sp,stack
+    ld sp,stack.top + 0x8000
     call @relocate
 
     ld ix,@files
