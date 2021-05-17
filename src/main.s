@@ -159,9 +159,6 @@ endif
     ld a,page.pic
     call @set.interrupt.handler
 
-    ld a,page.snd
-    call @set.interrupt.handler
-
     ret
 
 ;-------------------------------------------------------------------------------
@@ -176,8 +173,6 @@ endif
 
     include "error.s"
 
-    include "views.s"
-    include "sounds.s"
     include "flags.s"
 
     include "resource/load.s"

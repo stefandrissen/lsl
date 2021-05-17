@@ -40,6 +40,7 @@
 		<attribute name="additional.1" default="" />
 		<attribute name="additional.2" default="" />
 		<attribute name="additional.3" default="" />
+		<attribute name="additional.4" default="" />
 		<attribute name="import-symbols" default="false" />
 		<attribute name="game" />
 		<attribute name="debug" default="false" />
@@ -63,6 +64,7 @@
 				<arg line="-I obj/@{additional.1}" unless:blank="@{additional.1}" />
 				<arg line="-I obj/@{additional.2}" unless:blank="@{additional.2}" />
 				<arg line="-I obj/@{additional.3}" unless:blank="@{additional.3}" />
+				<arg line="-I obj/@{additional.4}" unless:blank="@{additional.4}" />
 				<arg line="--importfile=obj/symbols" if:true="@{import-symbols}" />
 				<arg line="-o obj/@{game}.dsk" />
 				<arg line="-D debug" if:true="@{debug}" />
@@ -83,9 +85,10 @@
 			<assemble source="boot" debug="true" />
 			<assemble source="view" debug="true" import-symbols="true" />
 			<assemble source="pic" debug="true" import-symbols="true" />
+			<assemble source="snd" debug="true" import-symbols="true" />
 			<assemble source="main" debug="true" debug-actions="false" import-symbols="true" />
 
-			<create-disk game="@{game}" source="boot" additional.1="main" additional.2="view" additional.3="pic" import-symbols="true" />
+			<create-disk game="@{game}" source="boot" additional.1="main" additional.2="view" additional.3="pic" additional.4="snd" import-symbols="true" />
 
 			<concat destfile="obj/@{game}.map" append="true">
 				<fileset dir="obj" includes="view.map main.map" />
@@ -110,12 +113,12 @@
 
 	</target>
 
-    <target name="sq2" description="Space Quest II: Vohaul's Revenge">
+	<target name="sq2" description="Space Quest II: Vohaul's Revenge">
 
-        <samagi game="sq2" />
+		<samagi game="sq2" />
 
-    </target>
-	
+	</target>
+
 	<target name="pq1" description="Police Quest: In Pursuit of the Death Angel">
 
 		<samagi game="pq1" />

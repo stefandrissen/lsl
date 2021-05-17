@@ -71,6 +71,11 @@ maskable.interrupt:
 
     in a,(port.hmpr)
     ld (@port.hmpr+1),a
+
+    ld a,page.snd
+    out (port.hmpr),a
+    call snd.interrupt.handler
+
     ld a,page.main
     out (port.hmpr),a
 maskable.interrupt.handler:

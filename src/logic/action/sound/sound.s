@@ -8,19 +8,16 @@
 
 logic.action.sound:
 
-if defined( strict )
+    ld b,(ix)   ; soundno
+    ld c,(ix+1) ; doneflag
 
-    jp logic.action.nyi
+    ld a,page.snd
+    out (port.hmpr),a
 
-else
+    call snd.sound
 
-    ld a,(ix)   ; soundno
-
-    ld h,sounds.high
-    ld l,a
-
-    ld a,(ix+1) ; doneflag
-    ld (hl),a
+    ld a,page.log
+    out (port.hmpr),a
 
     call flag.reset
 
@@ -28,5 +25,3 @@ else
     inc ix
 
     ret
-
-endif

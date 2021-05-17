@@ -5,7 +5,6 @@
 logic.action.load.sound:
 
     ld a,(ix)   ; SOUNDNO
-    inc ix
 
     push ix
 
@@ -13,5 +12,7 @@ logic.action.load.sound:
     call resource.load
 
     pop ix
+
+    inc ix
 
     ret

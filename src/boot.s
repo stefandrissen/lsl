@@ -113,6 +113,7 @@ obj.snddir:
     defw @file.main
     defw @file.pic
     defw @file.view
+    defw @file.snd
     defw 0
 
 @file.main:
@@ -126,6 +127,10 @@ obj.snddir:
 @file.view:
     defm "view"
     defb page.view
+
+@file.snd:
+    defm "snd"
+    defb page.snd
 
 ;-------------------------------------------------------------------------------
 

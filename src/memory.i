@@ -23,7 +23,8 @@ page.pic:               equ 8
 ptr.picdir:                 equ 0x8000 + 0x1000 ; drawing code
 
 page.snd:               equ 10
-ptr.snddir:                 equ 0x8000
+snd.interrupt.handler:      equ 0x8000
+ptr.snddir:                 equ 0x8000 + 0x1000 ; sound code
 
 page.screen:            equ 12   ; must be even (bottom bit ignored)
 
