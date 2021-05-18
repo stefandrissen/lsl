@@ -42,10 +42,24 @@ sound:
 ;===============================================================================
 snd.play:
 ; play sound
+
+; TI SN76496A
+; F = frequency = 111860 / (((Byte3 & 0x3f) << 4) + (Byte4 & 0x0f))
 ;-------------------------------------------------------------------------------
 
+    ld a,(sound+@no)
+    or a
+    ret z
+
+    push ix
     push hl
     push de
+    push bc
+
+    ld ix,@saa
+
+    ;-----------------------------------
+    ; voice 1
 
     ld hl,(sound+@voice.1.duration)
     dec hl
@@ -53,7 +67,7 @@ snd.play:
 
     ld a,h
     or l
-    jr nz,@no.change
+    jr nz,@no.change.1
 
     ld hl,(sound+@voice.1.ptr)
 
@@ -68,26 +82,277 @@ snd.play:
 
     ld a,0xff
     cp d
-    jr nz,@not.end
+    jr nz,@not.end.1
     cp e
-    jr z,@no.change ; end of note
-@not.end:
+    jr z,@silent.1  ; end of note
 
-    ; TI SN76496A
-    ; F = frequency = 111860 / (((Byte3 & 0x3f) << 4) + (Byte4 & 0x0f))
+@not.end.1:
 
-    push bc
+    ld e,(hl)       ; freq
+    inc hl
+    ld d,(hl)       ; freq
+    inc hl
+    call @get.tone  ; de = oct tone
 
-    ld bc,port.sound.address
+    ld a,(ix+@octave.1.0)
+    and 0xf0
+    or d
+    ld (ix+@octave.1.0),a
 
-    ld d,0
+    ld (ix+@tone.0),e
 
-    ld a,(hl)       ; freq
+    ld a,(hl)   ; attenuation
     inc hl
 
+    and 0x0f
+    ld b,a
+    ld a,0x0f
+    sub b
+
+    ld e,a
+    rlca
+    rlca
+    rlca
+    rlca
+    or e
+
+    ld (ix+@amplitude.0),a
+
+    ld (sound+@voice.1.ptr),hl
+
+    bit 3,(ix+@octave.1.0)
+    jr nz,@silent.1
+    set 0,(ix+@frequency.enable)
+    jr @continue.1
+
+@silent.1:
+    res 0,(ix+@frequency.enable)
+
+@continue.1:
+
+@no.change.1:
+
+    ;-----------------------------------
+    ; voice 2
+
+    ld hl,(sound+@voice.2.duration)
+    dec hl
+    ld (sound+@voice.2.duration),hl
+
+    ld a,h
+    or l
+    jr nz,@no.change.2
+
+    ld hl,(sound+@voice.2.ptr)
+
+    ld e,(hl)
+    inc hl
+    ld a,e
+    ld (sound+@voice.2.duration+0),a
+    ld d,(hl)
+    inc hl
+    ld a,d
+    ld (sound+@voice.2.duration+1),a
+
+    ld a,0xff
+    cp d
+    jr nz,@not.end.2
+    cp e
+    jr z,@silent.2  ; end of note
+
+@not.end.2:
+
+    ld e,(hl)       ; freq
+    inc hl
+    ld d,(hl)       ; freq
+    inc hl
+    call @get.tone  ; de = oct tone
+
+    ld a,d
+    rlca
+    rlca
+    rlca
+    rlca
+    ld d,a
+
+    ld a,(ix+@octave.1.0)
+    and 0x0f
+    or d
+    ld (ix+@octave.1.0),a
+
+    ld (ix+@tone.1),e
+
+    ld a,(hl)   ; attenuation
+    inc hl
+
+    and 0x0f
+    ld b,a
+    ld a,0x0f
+    sub b
+
+    ld e,a
+    rlca
+    rlca
+    rlca
+    rlca
+    or e
+
+    ld (ix+@amplitude.1),a
+
+    ld (sound+@voice.2.ptr),hl
+
+    bit 7,(ix+@octave.1.0)
+    jr nz,@silent.2
+    set 1,(ix+@frequency.enable)
+    jr @continue.2
+
+@silent.2:
+    res 1,(ix+@frequency.enable)
+
+@continue.2:
+
+@no.change.2:
+
+    ;-----------------------------------
+    ; voice 3
+
+    ld hl,(sound+@voice.3.duration)
+    dec hl
+    ld (sound+@voice.3.duration),hl
+
+    ld a,h
+    or l
+    jr nz,@no.change.3
+
+    ld hl,(sound+@voice.3.ptr)
+
+    ld e,(hl)
+    inc hl
+    ld a,e
+    ld (sound+@voice.3.duration+0),a
+    ld d,(hl)
+    inc hl
+    ld a,d
+    ld (sound+@voice.3.duration+1),a
+
+    ld a,0xff
+    cp d
+    jr nz,@not.end.3
+    cp e
+    jr z,@silent.3  ; end of note
+
+@not.end.3:
+
+    ld e,(hl)       ; freq
+    inc hl
+    ld d,(hl)       ; freq
+    inc hl
+    call @get.tone  ; de = oct tone
+
+    ld a,(ix+@octave.3.2)
+    and 0xf0
+    or d
+    ld (ix+@octave.3.2),a
+
+    ld (ix+@tone.2),e
+
+    ld a,(hl)   ; attenuation
+    inc hl
+
+    and 0x0f
+    ld b,a
+    ld a,0x0f
+    sub b
+
+    ld e,a
+    rlca
+    rlca
+    rlca
+    rlca
+    or e
+
+    ld (ix+@amplitude.2),a
+
+    ld (sound+@voice.3.ptr),hl
+
+    bit 3,(ix+@octave.3.2)
+    jr nz,@silent.3
+    set 2,(ix+@frequency.enable)
+    jr @continue.3
+
+@silent.3:
+    res 2,(ix+@frequency.enable)
+
+@continue.3:
+
+@no.change.3:
+
+    ld bc,port.sound.data
+    ld hl,@saa
+
+    for 26, outi
+
+    pop bc
+    pop de
+    pop hl
+    pop ix
+
+    ret
+
+;-------------------------------------------------------------------------------
+@saa:
+    org 0
+
+                        defb saa.register.amplitude_0
+    @amplitude.0:       defb 0
+                        defb saa.register.amplitude_1
+    @amplitude.1:       defb 0
+                        defb saa.register.amplitude_2
+    @amplitude.2:       defb 0
+                        defb saa.register.amplitude_3
+    @amplitude.3:       defb 0
+
+                        defb saa.register.frequency_tone_0
+    @tone.0:            defb 0
+                        defb saa.register.frequency_tone_1
+    @tone.1:            defb 0
+                        defb saa.register.frequency_tone_2
+    @tone.2:            defb 0
+                        defb saa.register.frequency_tone_3
+    @tone.3:            defb 0
+
+                        defb saa.register.octave_1_0
+    @octave.1.0:        defb 0  ; .111.000
+                        defb saa.register.octave_3_2
+    @octave.3.2:        defb 0  ; .333.222
+
+                        defb saa.register.frequency_enable
+    @frequency.enable:  defb 0  ; ..543210
+                        defb saa.register.noise_enable
+    @noise.enable:      defb 0  ; ..543210
+
+                        defb saa.register.noise_generator_1_0
+    @noise.generator:   defb 0  ; ..11..00
+
+    org @saa + $
+
+;===============================================================================
+@get.tone:
+;
+; input
+;   de = n in agi format ((Byte3 & 0x3f) << 4) + (Byte4 & 0x0f))
+;
+; output
+;   de = octave, tone
+;-------------------------------------------------------------------------------
+
+    ld b,d
+
+    ld a,e
     and %00111111
     rlca            ; << 1
     rlca            ; << 2
+    ld d,0
     ld e,a
     sla e
     rl d            ; << 3
@@ -96,9 +361,7 @@ snd.play:
     sla e
     rl d            ; * 2
 
-    ld a,(hl)       ; freq
-    inc hl
-
+    ld a,b
     and %00001111
     rlca
     or e
@@ -108,61 +371,14 @@ snd.play:
     add a,d
     ld d,a
 
-    ld a,saa.register.frequency_enable
-    out (c),a
-    dec b
+    ex de,hl
 
-    ld a,(de)
-    cp 8
-    ld a,%00000001
-    jr nz,@not.silent
-    xor a
-@not.silent:
-    out(c),a
-    inc b
+    ld a,(hl)
+    inc l
+    ld l,(hl)
+    ld h,a
 
-    ld a,saa.register.octave_1_0
-    out (c),a
-    dec b
-
-    ld a,(de)
-
-    out (c),a
-    inc b
-    ld a,saa.register.frequency_tone_0
-    out (c),a
-    dec b
-
-    inc e
-    ld a,(de)
-
-    out (c),a
-    inc b
-    ld a,saa.register.amplitude_0
-    out (c),a
-    dec b
-
-    ld a,0x0f
-    sub (hl)            ; attenuation
-    inc hl
-
-    ld e,a
-    rlca
-    rlca
-    rlca
-    rlca
-    or e
-
-    out (c),a
-
-    ld (sound+@voice.1.ptr),hl
-
-    pop bc
-
-@no.change:
-
-    pop de
-    pop hl
+    ex de,hl
 
     ret
 
@@ -304,8 +520,6 @@ snd.sound:
 ; generated with https://abldojo.services.progress.com/?shareId=60a2e6329585066c21979919
 
 @saa.frequency:
-
-    print @saa.frequency
 
     ;  oct,tone  n
     defb 8,255 ; 0
