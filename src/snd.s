@@ -287,6 +287,92 @@ snd.play:
 
 @no.change.3:
 
+    ;-----------------------------------
+    ; noise
+
+    ld hl,(sound+@noise.duration)
+    dec hl
+    ld (sound+@noise.duration),hl
+
+    ld a,h
+    or l
+    jr nz,@no.change.4
+
+    ld hl,(sound+@noise.ptr)
+
+    ld e,(hl)
+    inc hl
+    ld a,e
+    ld (sound+@noise.duration+0),a
+    ld d,(hl)
+    inc hl
+    ld a,d
+    ld (sound+@noise.duration+1),a
+
+    ld a,0xff
+    cp d
+    jr nz,@not.end.4
+    cp e
+    jr z,@silent.4  ; end of note
+
+@not.end.4:
+
+    inc hl
+    ld a,(hl)       ; noise
+    inc hl
+
+    and %00000011
+
+    ; NF0  NF1  Noise Frequency
+    ;
+    ;   0    0  1,193,180 /  512 = 2330 -> 7 82
+    ;   0    1  1,193,180 / 1024 = 1165 -> 6 82
+    ;   1    0  1,193,180 / 2048 =  583 -> 5 82
+
+    add 5
+    rlca
+    rlca
+    rlca
+    rlca
+    ld d,a
+
+    ld a,(ix+@octave.3.2)
+    and 0x0f
+    or d
+    ld (ix+@octave.3.2),a
+
+    ld a,(hl)   ; attenuation
+    inc hl
+
+    and 0x0f
+    ld b,a
+    ld a,0x0f
+    sub b
+
+    ld e,a
+    rlca
+    rlca
+    rlca
+    rlca
+    or e
+
+    ld (ix+@amplitude.3),a
+
+    ld (sound+@noise.ptr),hl
+
+    bit 3,(ix+@octave.3.2)
+
+    jr nz,@silent.3
+    set 3,(ix+@noise.enable)
+    jr @continue.4
+
+@silent.4:
+    res 3,(ix+@noise.enable)
+
+@continue.4:
+
+@no.change.4:
+
     ld bc,port.sound.data
     ld hl,@saa
 
@@ -421,21 +507,17 @@ snd.sound:
     ld (sound+@voice.3.duration),hl
     ld (sound+@noise.duration),hl
 
-    ld bc,port.sound.address
-    ld a,saa.register.sound_enable
-    out (c),a
-    dec b
-    ld a,saa.se.channels.enabled
-    out (c),a
-    inc b
-
-    ld a,saa.register.frequency_enable
-    out (c),a
-    dec b
-    xor a
-    out(c),a
+    ld bc,port.sound.data
+    ld hl,@saa.init
+    for 8, outi
 
     ret
+
+@saa.init:
+    defb    saa.register.sound_enable       , saa.se.channels.enabled
+    defb    saa.register.frequency_enable   , 0
+    defb    saa.register.noise_generator_1_0, saa.noise_1.variable
+    defb    saa.register.frequency_tone_3   , 82 ; noise
 
 ;===============================================================================
 @get.voice.ptr.de:
