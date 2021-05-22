@@ -877,6 +877,21 @@ view.observe.objs:
     ret
 
 ;-------------------------------------------------------------------------------
+view.erase:
+
+    ; TODO - first need back buffer in general
+
+    ret
+
+;-------------------------------------------------------------------------------
+view.fix.loop:
+
+    ; TODO - but since direction does not automatically choose loop, not
+    ;        a problem yet
+
+    ret
+
+;-------------------------------------------------------------------------------
 view.get.posn:
 
     ld e,(iy + object.x)
@@ -889,6 +904,24 @@ view.position:
     ld (iy + object.x),e
     ld (iy + object.y),d
     ret
+
+;-------------------------------------------------------------------------------
+view.reposition:
+
+    call view.erase
+    ld a,(iy+object.x)
+    add e
+    ld e,a
+    ld a,(iy+object.y)
+    add d
+    ld d,a
+    jr view.position
+
+;-------------------------------------------------------------------------------
+view.reposition.to:
+
+    call view.erase
+    jr view.position
 
 ;-------------------------------------------------------------------------------
 view.set.priority:
