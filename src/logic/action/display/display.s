@@ -13,9 +13,10 @@ logic.action.display:
     ; print
 
     ld a,(ix+0)     ; row
-    rlca
-    rlca
-    rlca            ; * 8
+    or a
+    jr z,@top
+    dec a           ; row = 0-24, SAM = 0-23, intro displays text on bottom row
+@top:
     ld (util.print.y),a
 
     ld a,(ix+1)     ; column
