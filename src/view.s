@@ -55,6 +55,8 @@ object.0:
 
     org 0
 
+    object.no:              defb 0  ;
+
     object.x:               defb 0  ; x position
     object.y:               defb 0  ; y position
     object.prev.x:          defb 0
@@ -111,6 +113,7 @@ object.0:
     object.move.x:          defb 0
     object.move.y:          defb 0
     object.move.doneflag:   defb 0  ; flag to set when at destination
+    object.move.step.size:  defb 0
 
     object.flags:           defb 0  ; see below - 1 byte is enough
 
@@ -435,9 +438,11 @@ view.add.to.pic:
 view.animate.obj:
 ;-------------------------------------------------------------------------------
 
-    ld l,c
+    ld (iy+object.no),b
+
+    ld l,b
     ld h,objects.active.high
-    ld (hl),1
+;    ld (hl),0       ; how does animate relate to draw?
 
     ret
 
@@ -476,7 +481,7 @@ view.move.objects:
     ld a,l
     call @object.get.iy
 
-    call view.draw
+    call @view.draw
 
     pop bc
     pop hl
@@ -490,6 +495,12 @@ view.move.objects:
 
 ;===============================================================================
 view.draw:
+
+    ld l,(iy+object.no)
+    ld h,objects.active.high    ; animate or draw?
+    ld (hl),1
+
+@view.draw:
 ; input
 ;   iy = object
 
@@ -540,14 +551,244 @@ view.draw:
     ld a,0
     ld (iy+object.step.count),a
 
-    ; TODO add direction
-    ; TODO check move
-    ld a,(iy+object.step.size)
-    add a,(iy+object.x)
-    ld (iy+object.x),a
+    ld a,(iy+object.motion)
+
+    push af
+
+    cp enum.motion.move.obj
+    call z,@motion.move.obj
+
+    ld a,(iy + object.direction)
+    add a,a
+    ld e,a
+
+    pop af
+
+    ld d,0
+    ld hl,@update.x.y.direction
+    add hl,de
+    ld a,(hl)
+    inc hl
+    ld h,(hl)
+    ld l,a
+
+    ld c,(iy+object.step.size)
+
+    jp (hl)
 
 @no.step:
 
+    ret
+
+;-------------------------------------------------------------------------------
+@update.x.y.direction:
+
+    defw @move.stationary
+    defw @move.north
+    defw @move.north.east
+    defw @move.east
+    defw @move.south.east
+    defw @move.south
+    defw @move.south.west
+    defw @move.west
+    defw @move.north.west
+
+@move.stationary:
+    ret
+
+@move.north:
+    ld a,(iy+object.y)
+    sub c
+    ld (iy+object.y),a
+    ret
+
+@move.north.east:
+    call @move.north
+
+@move.east:
+    ld a,(iy+object.x)
+    add c
+    ld (iy+object.x),a
+    ret
+
+@move.south.east:
+    call @move.east
+
+@move.south:
+    ld a,(iy+object.y)
+    add c
+    ld (iy+object.y),a
+    ret
+
+@move.south.west:
+    call @move.south
+
+@move.west:
+    ld a,(iy+object.x)
+    sub c
+    ld (iy+object.x),a
+    ret
+
+@move.north.west:
+    call @move.north
+    jr @move.west
+
+;-------------------------------------------------------------------------------
+
+@obj.directions:
+
+    defb enum.direction.north.west
+    defb enum.direction.north
+    defb enum.direction.north.east
+
+    defb enum.direction.west
+    defb enum.direction.stationary
+    defb enum.direction.east
+
+    defb enum.direction.south.west
+    defb enum.direction.south
+    defb enum.direction.south.east
+
+;===============================================================================
+@motion.move.obj:
+
+    ld b,(iy+object.x)
+    ld c,(iy+object.y)
+
+    ld d,(iy+object.move.x)
+    ld e,(iy+object.move.y)
+
+    ld a,(iy+object.step.size)
+
+    call @find.direction
+
+    ld (iy + object.direction),a
+
+    ld c,a
+    ld a,(iy+object.no)
+    or a
+    jr nz,@not.ego
+
+    ld a,page.main
+    out (port.hmpr),a
+
+    ld hl,main.var.ego_direction
+    ld (hl),c
+
+@not.ego:
+    ld a,c
+    cp enum.direction.stationary
+    ret nz
+
+    ld a,enum.motion.normal
+    ld (iy + object.motion),a
+
+    ld a,(iy + object.move.step.size)
+    or a
+    jr z,@step.size.not.set
+    ld (iy + object.step.size),a
+@step.size.not.set:
+
+    ld a,page.main
+    out (port.hmpr),a
+
+    ld a,(iy+object.move.doneflag)
+    call @view.set.flag
+
+    ret
+
+;-------------------------------------------------------------------------------
+@view.set.flag:
+;
+;-------------------------------------------------------------------------------
+    ld h,main.flags / 0x100 + 0x80
+
+    ld l,a
+    srl l
+    srl l
+    srl l
+
+    and %00000111
+    rlca
+    rlca
+    rlca
+    or %11000110          ; set n,(hl)
+    ld (@smc.bit+1),a
+
+@smc.bit:
+    set 0,(hl)  ; or res n,(hl) or bit n,(hl)
+
+    ret
+
+;-------------------------------------------------------------------------------
+@find.direction:
+; input
+;   bc = xy
+;   de = xy destination
+;   a  = step size
+;
+; output
+;   a = direction
+;-------------------------------------------------------------------------------
+
+    ld l,a
+
+    ld a,d
+    sub b
+    call @distance.vs.step
+
+    ld h,a
+
+    ld a,e
+    sub c
+    call @distance.vs.step
+
+    ld l,a
+    rlca
+    add a,l ; * 3
+    add a,h
+    ld l,a
+
+    ld h,0
+    ld de,@obj.directions
+
+    add hl,de
+
+    ld a,(hl)
+
+    ret
+
+;-------------------------------------------------------------------------------
+@distance.vs.step:
+; input
+;   a = distance
+;   l = step
+; output
+;   a = 0 step <= - distance
+;       2 step <= distance
+;       1
+;-------------------------------------------------------------------------------
+
+    bit 7,a
+    jr z,@no.2  ; if distance is not negative, step cannot be smaller
+
+    neg
+    cp l
+    jr c,@no.1
+
+    ld a,0
+    ret
+
+@no.1:
+    neg
+@no.2:
+    cp l
+    jr c,@no.3
+
+    ld a,2
+    ret
+@no.3:
+    ld a,1
     ret
 
 ;===============================================================================
@@ -717,8 +958,10 @@ view.move.obj:
     ld a,c
     or a
     jr z,@keep.step.size
+    ld a,(iy + object.step.size)
     ld (iy + object.step.size),c
 @keep.step.size:
+    ld (iy + object.move.step.size),a
     ex af,af'
     ld (iy + object.move.doneflag),a
 

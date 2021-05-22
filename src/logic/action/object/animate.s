@@ -5,7 +5,7 @@
 
 logic.action.animate.obj:
 
-    ld c,(ix)   ; oA
+    ld b,(ix)   ; oA
 
     ld hl,view.animate.obj
     call section.call.object

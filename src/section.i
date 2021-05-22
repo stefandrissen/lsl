@@ -1,5 +1,12 @@
 ; section.i
 
+;-------------------------------------------------------------------------------
+; addresses which cannot be resolved at assembly time
+
+main.flags:                 equ 0x0100
+main.vars:                  equ 0x0200
+    main.var.ego_direction:     equ 0x0206
+
 ;===============================================================================
 section.call.pic:
 ;   change bank AB to pic - identical code in bank pic
@@ -102,5 +109,3 @@ non.maskable.interrupt:
     assert $ <= stack.top - stack.size
 
     align 0x100
-
-

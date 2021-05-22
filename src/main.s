@@ -59,6 +59,79 @@
 
 ;-------------------------------------------------------------------------------
 
+main.flags:
+    include "flags.s"
+
+;-------------------------------------------------------------------------------
+    ds align 0x100
+;===============================================================================
+main.vars:
+vars.high: equ main.vars / 0x100
+
+; variables
+; - 26 reserved variables
+;-------------------------------------------------------------------------------
+var.current_room_number:        defb 0          ; v0 currentRoom
+var.previous_room_number:       defb 0          ; v1 previousRoom
+var.border_touched_ego:         defb 0          ; v2 edgeEgoHit
+var.current_score:              defb 0          ; v3 currentScore
+var.object_touched_border:      defb 0          ; v4 objHitEdge
+    enum.border_none:               equ 0
+    enum.border_top_or_horizon:     equ 1
+    enum.border_right:              equ 2
+    enum.border_bottom:             equ 3
+    enum.border_left:               equ 4
+var.edge_obj_hit:               defb 0          ; v5 edgeObjHit
+main.var.ego_direction:         defb 0          ; v6 egoDir
+    enum.direction_up:              equ 1
+    enum.direction_up_right:        equ 2
+    enum.direction_right:           equ 3
+    enum.direction_right_down:      equ 4
+    enum.direction_down:            equ 5
+    enum.direction_down_left:       equ 6
+    enum.direction_left:            equ 7
+    enum.direction_left_up:         equ 8
+
+var.maximum_score:              defb 0          ; v7 maxScore
+var.free_pages:                 defb 0          ; v8 memoryLeft
+var.word_not_found:             defb 0          ; v9 unknownWordNum
+var.interpreter_cycle_time:     defb 0          ; v10 animationInterval
+var.seconds:                    defb 0          ; v11 elapsedSeconds
+var.minutes:                    defb 0          ; v12 elapsedMinutes
+var.hours:                      defb 0          ; v13 elapsedHours
+var.days:                       defb 0          ; v14 elapsedDays
+var.joystick_sensitivity:       defb 0          ; v15 dblClickDelay
+var.view_resource_ego:          defb 0          ; v16 currentEgoView
+var.interpreter_error_code:     defb 0          ; v17 errorNumber
+var.error_code_parameter:       defb 0          ; v18 errorParameter
+var.key_pressed:                defb 0          ; v19 lastChar
+var.computer_type:              defb 8          ; v20 machineType
+    enum.computer.ibm_pc:           equ 0
+    enum.computer.atari_st:         equ 4
+    enum.computer.amiga:            equ 5
+    enum.computer.apple_iigs:       equ 7
+    enum.computer.sam_coupe:        equ 8 ; ;-)
+
+var.message_window_timer:       defb 0          ; v21 printTimeout
+var.sound_type:                 defb 0          ; v22 numberOfVoices
+var.sound_volume:               defb 0          ; v23 attenuation
+var.input_buffer_size:          defb 41         ; v24 inputLength
+var.inventory_items_selected:   defb 0          ; v25 selectedItem
+var.monitor_type:               defb 3          ; v26 monitorType
+    enum.monitor.cga:               equ 0
+    enum.monitor.rgb:               equ 1
+    enum.monitor.mono:              equ 2
+    enum.monitor.ega:               equ 3
+    enum.monitor.vga:               equ 4
+
+
+;-------------------------------------------------------------------------------
+; - 230 'user' variables
+    defs 230
+;-------------------------------------------------------------------------------
+
+;-------------------------------------------------------------------------------
+
 @main.init.low:
 
     in a,(port.hmpr)
@@ -96,7 +169,11 @@
 
 main.game.loop:
 
-    ; 1. delay time - TODO updated elapsed time
+    ; 1. delay time
+
+    halt
+    halt
+
     ; 2. clear keyboard buffer
     ; 3. poll keyboard and joystick
     ; 4. variable analysis
@@ -173,8 +250,6 @@ endif
 
     include "error.s"
 
-    include "flags.s"
-
     include "resource/load.s"
 
     include "logic/load.s"
@@ -230,74 +305,7 @@ var.frames: defb 0  ; increased by interrupt, flows over to var.seconds
 
     org $ - 0x8000
 
-;-------------------------------------------------------------------------------
-    ds align 0x100
-;===============================================================================
-vars:
-vars.high: equ vars / 0x100
-
-; variables
-; - 26 reserved variables
-;-------------------------------------------------------------------------------
-var.current_room_number:        defb 0          ; v0 currentRoom
-var.previous_room_number:       defb 0          ; v1 previousRoom
-var.border_touched_ego:         defb 0          ; v2 edgeEgoHit
-var.current_score:              defb 0          ; v3 currentScore
-var.object_touched_border:      defb 0          ; v4 objHitEdge
-    enum.border_none:               equ 0
-    enum.border_top_or_horizon:     equ 1
-    enum.border_right:              equ 2
-    enum.border_bottom:             equ 3
-    enum.border_left:               equ 4
-var.edge_obj_hit:               defb 0          ; v5 edgeObjHit
-var.ego_direction:              defb 0          ; v6 egoDir
-    enum.direction_up:              equ 1
-    enum.direction_up_right:        equ 2
-    enum.direction_right:           equ 3
-    enum.direction_right_down:      equ 4
-    enum.direction_down:            equ 5
-    enum.direction_down_left:       equ 6
-    enum.direction_left:            equ 7
-    enum.direction_left_up:         equ 8
-
-var.maximum_score:              defb 0          ; v7 maxScore
-var.free_pages:                 defb 0          ; v8 memoryLeft
-var.word_not_found:             defb 0          ; v9 unknownWordNum
-var.interpreter_cycle_time:     defb 0          ; v10 animationInterval
-var.seconds:                    defb 0          ; v11 elapsedSeconds
-var.minutes:                    defb 0          ; v12 elapsedMinutes
-var.hours:                      defb 0          ; v13 elapsedHours
-var.days:                       defb 0          ; v14 elapsedDays
-var.joystick_sensitivity:       defb 0          ; v15 dblClickDelay
-var.view_resource_ego:          defb 0          ; v16 currentEgoView
-var.interpreter_error_code:     defb 0          ; v17 errorNumber
-var.error_code_parameter:       defb 0          ; v18 errorParameter
-var.key_pressed:                defb 0          ; v19 lastChar
-var.computer_type:              defb 8          ; v20 machineType
-    enum.computer.ibm_pc:           equ 0
-    enum.computer.atari_st:         equ 4
-    enum.computer.amiga:            equ 5
-    enum.computer.apple_iigs:       equ 7
-    enum.computer.sam_coupe:        equ 8 ; ;-)
-
-var.message_window_timer:       defb 0          ; v21 printTimeout
-var.sound_type:                 defb 0          ; v22 numberOfVoices
-var.sound_volume:               defb 0          ; v23 attenuation
-var.input_buffer_size:          defb 41         ; v24 inputLength
-var.inventory_items_selected:   defb 0          ; v25 selectedItem
-var.monitor_type:               defb 3          ; v26 monitorType
-    enum.monitor.cga:               equ 0
-    enum.monitor.rgb:               equ 1
-    enum.monitor.mono:              equ 2
-    enum.monitor.ega:               equ 3
-    enum.monitor.vga:               equ 4
-
-
-;-------------------------------------------------------------------------------
-; - 230 'user' variables
-
-;-------------------------------------------------------------------------------
-    ds align 0x100
+    align 0x100
 ;===============================================================================
 strings:
 strings.high: equ strings / 0x100

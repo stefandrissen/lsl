@@ -1,7 +1,8 @@
-    ds align 0x100
+
+ds align 0x100
+
 ;===============================================================================
-flags:
-flags.high: equ flags / 0x100
+main.flags:
 
 ; flags
 ; - 16  reserved flags
@@ -54,7 +55,7 @@ flag.set:
     ;       %1000 0110 = res
     ;       %1100 0110 = set
 
-    ld h,flags.high
+    ld h,main.flags / 0x100
 
     ld l,a
     srl l

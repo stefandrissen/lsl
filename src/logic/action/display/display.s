@@ -1,6 +1,8 @@
 ; display(ROW,COLUMN,mMESSAGE);
 
 ; Displays the text of message mMESSAGE at the specified row and column.
+; - row    = 0 - 24 (200 pixels high)
+; - column = 0 - 39 (320 pixels wide)
 
 logic.action.display:
 
