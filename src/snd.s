@@ -40,12 +40,59 @@ sound:
     org $ + sound
 
 ;===============================================================================
+@interrupt.lines:
+
+; to approximate 60Hz playback (312 scan lines, 192 visible)
+;-------------------------------------------------------------------------------
+    defb 191    ; should be 200
+    defb 148
+    defb  96
+    defb  44
+    defb   0    ; should be -8
+    defb  -1    ; frame interrupt
+
+;===============================================================================
 snd.play:
 ; play sound
-
+;
+; input
+;   a = status register (indicates interrupt)
+;
 ; TI SN76496A
 ; F = frequency = 111860 / (((Byte3 & 0x3f) << 4) + (Byte4 & 0x0f))
 ;-------------------------------------------------------------------------------
+
+    push hl
+
+@smc.hl:
+    ld hl,@interrupt.lines
+
+    and interrupt.frame
+    ld a,(hl)
+    jr nz,@frame
+
+    cp -1
+    jr nz,@line.ok
+
+@ret:
+    pop hl
+    ret
+
+@frame:
+    cp -1
+    jr nz,@ret
+
+    ld a,(hl)
+@line.ok:
+    inc hl
+    out (port.line_interrupt),a
+    inc a
+    jr nz,@nz
+    ld hl,@interrupt.lines
+@nz:
+    ld (@smc.hl+1),hl
+
+    pop hl
 
     ld a,(sound+@no)
     or a

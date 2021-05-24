@@ -11,9 +11,13 @@ port.clut:                          equ port.color_look_up_table
 port.status_register:               equ 0xf9    ; in 249
 port.status:                        equ port.status_register
 
-    frame.interrupt:                    equ %00001000
+    interrupt.line:                     equ %00000001
+    interrupt.mouse:                    equ %00000010
+    interrupt.midi.in:                  equ %00000100
+    interrupt.frame:                    equ %00001000
+    interrupt.midi.out:                 equ %00010000
 
-    ; see keyboard.i
+    ; see keyboard.i                        %11100000
 
 ;---------------------------------------------------------------
 

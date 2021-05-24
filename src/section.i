@@ -79,9 +79,20 @@ maskable.interrupt:
     in a,(port.hmpr)
     ld (@port.hmpr+1),a
 
+    in a,(port.status)
+    and interrupt.line | interrupt.frame
+
+    push af
     ld a,page.snd
     out (port.hmpr),a
-    call snd.interrupt.handler
+    pop af
+
+    push af
+    call nz,snd.interrupt.handler
+    pop af
+
+    and interrupt.frame
+    jr z,@port.hmpr
 
     ld a,page.main
     out (port.hmpr),a
