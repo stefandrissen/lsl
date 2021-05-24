@@ -1,4 +1,4 @@
-; draw.pic(vA); TODO move pic.draw in here and draw actual pic
+; draw.pic(vA);
 
 ; Picture vA is drawn. Only the visual and priority screens in memory updated -
 ; not the actual screen itself. To update the screen, use the show.pic command.

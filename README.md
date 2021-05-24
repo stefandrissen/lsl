@@ -16,12 +16,16 @@ The data files used are from the original PC version, downloaded from [myabandon
 
 - 2021-05-22 Executing more logic, three channel sound, getting to second intro screen.
 
-[![](https://img.youtube.com/vi/uuMEnUA0ZJ8/0.jpg)](https://www.youtube.com/watch?v=uuMEnUA0ZJ8)
+[![](https://img.youtube.com/vi/uuMEnUA0ZJ8/0.jpg)](https://youtu.be/uuMEnUA0ZJ8)
 
 - 2021-05-18 Executing logic, one channel sound.
 
-[![](https://img.youtube.com/vi/llnwEy08kf0/0.jpg)](https://www.youtube.com/watch?v=llnwEy08kf0)
+[![](https://img.youtube.com/vi/llnwEy08kf0/0.jpg)](https://youtu.be/llnwEy08kf0)
 
-- 2016 Drawing all screens, no logic yet.
+- 2019-01-09 Drawing all screens, no logic yet.
 
-[![](https://img.youtube.com/vi/gwnQOlHn7mE/0.jpg)](https://www.youtube.com/watch?v=gwnQOlHn7mE)
+[![](https://img.youtube.com/vi/F9AWT6OgUL4/0.jpg)](https://youtu.be/F9AWT6OgUL4)
+
+- 2016-10-30 Drawing screens incorrectly.
+
+[![](https://img.youtube.com/vi/gwnQOlHn7mE/0.jpg)](https://youtu.be/gwnQOlHn7mE)

@@ -482,6 +482,8 @@ logic.execute:
 ;
 ; https://wiki.scummvm.org/index.php?title=AGI/Specifications/Resources#test-commands
 
+    align 2
+
 @tests:
     defw logic.test.invalid         ; 00
     defw logic.test.equaln          ; 01

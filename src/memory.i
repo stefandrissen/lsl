@@ -26,9 +26,15 @@ page.snd:               equ 10
 snd.interrupt.handler:      equ 0x8000
 ptr.snddir:                 equ 0x8000 + 0x1000 ; sound code
 
-page.screen:            equ 12   ; must be even (bottom bit ignored)
+; screen pages must be even (bottom bit vmpr ignored)
+; screen.1 must be multiple of 4 since xor 2 is used to select other screen
 
-page.screen.priority:   equ 14
+page.screen.1:          equ 12  ; alternate buffer 1
+page.screen.2:          equ 14  ; alternate buffer 2
+page.screen.back:       equ 16  ; used to restore background of sprites
+page.screen.priority:   equ 18
 ptr.screen:                 equ 0x8000
+
+assert page.screen.1 \ 4 == 0
 
 screen.offset.to.center:    equ 24

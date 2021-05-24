@@ -91,7 +91,7 @@
 			<create-disk game="@{game}" source="boot" additional.1="main" additional.2="view" additional.3="pic" additional.4="snd" import-symbols="true" />
 
 			<concat destfile="obj/@{game}.map" append="true">
-				<fileset dir="obj" includes="view.map main.map" />
+				<fileset dir="obj" includes="view.map main.map snd.map pic.map" />
 			</concat>
 
 			<exec executable="${simcoupe}">

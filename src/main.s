@@ -142,8 +142,7 @@ var.monitor_type:               defb 3          ; v26 monitorType
 
     ei
 
-    ld a,page.screen
-    out (port.hmpr),a
+    ld a,page.screen.1
     or video.mode.4
     out (port.vmpr),a
 
