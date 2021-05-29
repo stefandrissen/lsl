@@ -73,6 +73,11 @@
 				<arg value="src/@{source}.s" />
 			</exec>
 
+			<delete file="obj/@{additional.1}" unless:blank="@{additional.1}" />
+			<delete file="obj/@{additional.2}" unless:blank="@{additional.2}" />
+			<delete file="obj/@{additional.3}" unless:blank="@{additional.3}" />
+			<delete file="obj/@{additional.4}" unless:blank="@{additional.4}" />
+
 		</sequential>
 
 	</macrodef>
@@ -82,7 +87,10 @@
 
 		<sequential>
 
+			<!-- first pass assembly of boot for symbols -->
 			<assemble source="boot" debug="true" />
+			<delete file="obj/boot" />
+
 			<assemble source="view" debug="true" import-symbols="true" />
 			<assemble source="pic" debug="true" import-symbols="true" />
 			<assemble source="snd" debug="true" import-symbols="true" />
