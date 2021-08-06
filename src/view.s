@@ -27,6 +27,9 @@
 objects.active: defs objects.max
 objects.active.high:    equ objects.active / 0x100
 
+object.state.draw:  equ 1
+object.state.erase: equ 2
+
     ds align 0x100
 
 objects:
@@ -117,14 +120,15 @@ object.0:
 
     object.flags:           defb 0  ; see below - 1 byte is enough
 
-    object.flag.ignore_blocks:  equ 0
-    object.flag.fixed_priority: equ 1
-    object.flag.ignore_horizon: equ 2
-    object.flag.cycling:        equ 3
-    object.flag.on_water:       equ 4
-    object.flag.ignore_objects: equ 5
-    object.flag.on_land:        equ 6
-    object.flag.loop_fixed:     equ 7
+        object.flag.ignore_blocks:  equ 0
+        object.flag.fixed_priority: equ 1
+        object.flag.ignore_horizon: equ 2
+        object.flag.cycling:        equ 3
+        object.flag.on_water:       equ 4
+        object.flag.ignore_objects: equ 5
+        object.flag.on_land:        equ 6
+        object.flag.loop_fixed:     equ 7
+
 
     object.length: equ $
     org object.0 + object.length
@@ -708,9 +712,9 @@ view.move.objects:
     ld b,objects.max
 @loop:
     ld a,(hl)
-    or a
+    cp object.state.draw
 
-    jr z,@+skip.object
+    jr nz,@+skip.object
 
     ld a,l
 
@@ -736,7 +740,7 @@ view.draw:
 
     ld l,(iy+object.no)
     ld h,objects.active.high    ; animate or draw?
-    ld (hl),1
+    ld (hl),object.state.draw
 
     ret
 
@@ -1134,7 +1138,9 @@ view.observe.objs:
 ;-------------------------------------------------------------------------------
 view.erase:
 
-    ; TODO - first need back buffer in general
+    ld l,(iy+object.no)
+    ld h,objects.active.high
+    ld (hl),object.state.erase
 
     ret
 
