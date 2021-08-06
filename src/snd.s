@@ -94,6 +94,10 @@ snd.play:
 
     pop hl
 
+if defined( silent )
+    ret
+endif
+
     ld a,(sound+@no)
     or a
     ret z
