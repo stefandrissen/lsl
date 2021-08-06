@@ -14,6 +14,10 @@ The data files used are from the original PC version, downloaded from [myabandon
 
 ## WIP
 
+- 2021-08-06 sound playback at 60Hz, buffering screens, (re)storing object (sprite) backgrounds
+
+[![](https://img.youtube.com/vi/wklwWEloDvw/0.jpg)](https://youtu.be/wklwWEloDvw)
+
 - 2021-05-22 Executing more logic, three channel sound, getting to second intro screen.
 
 [![](https://img.youtube.com/vi/uuMEnUA0ZJ8/0.jpg)](https://youtu.be/uuMEnUA0ZJ8)
