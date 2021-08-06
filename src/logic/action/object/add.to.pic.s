@@ -13,7 +13,7 @@
 
 logic.action.add.to.pic:
 
-; TODO - first load view, then add view to screen - how does priority work?
+; TODO - how does priority work?
 
     ld a,(ix+0)     ; viewno
     ld l,(ix+1)     ; loopno
