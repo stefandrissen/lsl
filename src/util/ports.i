@@ -37,6 +37,8 @@ port.lmpr:                          equ port.low_memory_page_register
 port.high_memory_page_register:     equ 0xfb    ; in/out 251
 port.hmpr:                          equ port.high_memory_page_register
 
+    ;                                        x  ppppp
+
     high.memory.page.mask:              equ %00011111
     high.memory.external:               equ %10000000
 
@@ -45,11 +47,13 @@ port.hmpr:                          equ port.high_memory_page_register
 port.video_memory_page_register:    equ 0xfc    ; in/out 252
 port.vmpr:                          equ port.video_memory_page_register
 
-    video.mode.1:                       equ %0000000
-    video.mode.2:                       equ %0100000
-    video.mode.3:                       equ %1000000
-    video.mode.4:                       equ %1100000
-    video.memory.page.mask:             equ %0011111
+    ;                                         mmppppp
+
+    video.mode.1:                       equ %00000000
+    video.mode.2:                       equ %00100000
+    video.mode.3:                       equ %01000000
+    video.mode.4:                       equ %01100000
+    video.memory.page.mask:             equ %00011111
 
 ;---------------------------------------------------------------
 
