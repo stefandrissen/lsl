@@ -1,22 +1,22 @@
 
 util.keyboard.pause:
 
-	push af
+    push af
 
-@nokey:	
-	xor a
-	in a,(254)
-	and %00011111
-	cp %00011111
-	jr nz,@nokey
+@nokey:
+    xor a
+    in a,(254)
+    and %00011111
+    cp %00011111
+    jr nz,@nokey
 
-@anykey:	
-	xor a
-	in a,(254)
-	and %00011111
-	cp %00011111
-	jr z,@anykey
-	
-	pop af
+@anykey:
+    xor a
+    in a,(254)
+    and %00011111
+    cp %00011111
+    jr z,@anykey
 
-	ret
+    pop af
+
+    ret
