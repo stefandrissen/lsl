@@ -2,6 +2,9 @@
 ;
 ; draw a picture - code located at start of page containing pictures
 ;
+; TODO
+;   - draw priority screen
+;
 ;-------------------------------------------------------------------------------
 
     include "memory.i"
@@ -46,16 +49,7 @@ pic.draw:
 ;   c = picture to draw
 ;-------------------------------------------------------------------------------
 
-    push bc
-
-    call @clear.screen
-
-    ; initially only draw actual screen (directly to screen) - later on draw to
-    ; off screen screen and also priority lines
-
-    ; should start completely white - lets just see
-
-    pop hl
+    ld l,c
     ld h,0
     add hl,hl
     add hl,hl
@@ -82,8 +76,10 @@ pic.draw:
     push hl
     pop ix
 
-    ld a,page.screen
+    ld a,page.screen.draw
     out (port.hmpr),a
+
+    call @clear.screen
 
 @main.loop:
     ld a,(ix)
@@ -850,9 +846,6 @@ endif
 ;-------------------------------------------------------------------------------
 
 @clear.screen:
-
-    ld a,page.screen
-    out (port.hmpr),a
 
     ld hl,@palette + 15
     ld c,port.clut

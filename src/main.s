@@ -170,47 +170,27 @@ main.game.loop:
 
     ; 1. delay time
 
+    ld hl,var.frames - 0x8000
+    ld a,(hl)
+@not.frame.interrupt:
     halt
-    halt
+    cp (hl)
+    jr z,@not.frame.interrupt
 
     ; 2. clear keyboard buffer
     ; 3. poll keyboard and joystick
     ; 4. variable analysis
     ; 5. move objects
-    ; 6. execute logic
 
     ld ix,view.move.objects
     call section.call.view
+
+    ; 6. execute logic
 
     ld a,0
     call logic.execute
 
     ; 7. test new.room
-
-if defined ( show-screens )
-
-    ld a,1
-    ld b,45
-
-    if defined( debug )
-        ld a,1
-        ld b,1
-    endif
-
-    @loop:
-        push af
-        push bc
-        call pic.load
-        call pic.draw
-        call pic.discard
-        call pic.show
-        call util.keyboard.pause
-        pop bc
-        pop af
-        inc a
-    djnz @loop
-
-endif
 
     ld a,flag.room_script_first_time
     call flag.reset

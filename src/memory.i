@@ -18,6 +18,7 @@ ptr.logdir:                 equ 0x8000
 
 page.view:              equ 6
 ptr.viewdir:                equ 0x8000 + 0x1000 ; view code
+objects.max:                equ 0x10
 
 page.pic:               equ 8
 ptr.picdir:                 equ 0x8000 + 0x1000 ; drawing code
@@ -31,9 +32,12 @@ ptr.snddir:                 equ 0x8000 + 0x1000 ; sound code
 
 page.screen.1:          equ 12  ; alternate buffer 1
 page.screen.2:          equ 14  ; alternate buffer 2
-page.screen.back:       equ 16  ; used to restore background of sprites
+page.screen.draw:       equ 16  ; pictures are drawn here before being shown
 page.screen.priority:   equ 18
 ptr.screen:                 equ 0x8000
+lst.background:             equ 0xe000
+var.ptr.background:         equ lst.background + objects.max * 2
+ptr.background:             equ var.ptr.background + 2
 
 assert page.screen.1 \ 4 == 0
 

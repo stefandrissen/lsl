@@ -24,8 +24,6 @@
 ;-------------------------------------------------------------------------------
 ; indicates if object [0x00-0x0f] is active
 
-objects.max:    equ 0x10
-
 objects.active: defs objects.max
 objects.active.high:    equ objects.active / 0x100
 
@@ -50,6 +48,8 @@ objects.high: equ objects / 0x100
     defw object.d
     defw object.e
     defw object.f
+
+    assert ( $ - objects ) / 2 == objects.max
 
 object.0:
 
@@ -179,6 +179,12 @@ view.add.to.pic:
 
     call @get.ptr.cel.header.hl
 
+    xor a
+    ld (@smc.call.store.background+1),a
+
+    ld a,page.screen.draw
+    out (port.hmpr),a
+
 ;-------------------------------------------------------------------------------
 @view.draw.cel:
 
@@ -187,24 +193,10 @@ view.add.to.pic:
     ;   e' = x
     ;   d' = y
 
-    ld a,page.screen
-    out (port.hmpr),a
-
     ld c,(hl)       ; width
     inc hl
     ld b,(hl)       ; height
     inc hl
-    ld a,(hl)       ; transparency
-    inc hl
-
-    and 0x0f
-    rlca
-    rlca
-    rlca
-    rlca
-    ld (@transparent+1),a
-
-    ld c,a
 
     exx
     ld a,d          ; y
@@ -223,12 +215,32 @@ view.add.to.pic:
     ld a,e          ; x
     exx
 
-    ld c,a          ; keep real x in c
+    push af
+
     srl a
-    add a,e
+    add e
     ld e,a          ; e = screen x
 
+@smc.call.store.background:
+    ld a,0
+    or a
+    call nz,@view.store.background
+
+    pop af
+    ld c,a          ; keep real x in c
+
+    ld a,(hl)       ; transparency
+    inc hl
+
+    and 0x0f
+    rlca
+    rlca
+    rlca
+    rlca
+    ld (@transparent+1),a
+
 @height:
+
     push de
     push bc
 @width:
@@ -304,6 +316,179 @@ view.add.to.pic:
     djnz @height
 
     ret
+
+;===============================================================================
+@view.store.background:
+; input
+;   iy = object
+;   c  = width (pixels)
+;   b  = height (pixels)
+;   de = screen address
+;
+; TODO optimize
+;-------------------------------------------------------------------------------
+
+;    ret         ; remove ret and nothing happens
+
+    push hl
+    push de
+    push bc
+
+    ld hl,(var.ptr.background)
+
+    ; store ptr.background in list for sprite
+    push de
+    ld e,(iy+object.no)
+    sla e
+    ld d,lst.background / 256
+
+    ex de,hl    ; -> de = (ptr.background), hl = list.background
+
+    ld (hl),e
+    inc l
+    ld (hl),d
+
+    ex de,hl    ; -> hl = (ptr.background)
+
+    pop de
+
+    ; store screen address
+    ld (hl),e
+    inc hl
+    ld (hl),d
+    inc hl
+
+    ; store dimension
+    ld (hl),c   ; width
+    inc hl
+    ld (hl),b   ; height
+    inc hl
+
+    srl c
+    ld a,c
+    ld (@width+1),a
+    ld a,0x80
+    sub c
+    ld (@next.line+1),a
+
+    ex de,hl    ; -> hl = screen, de = store
+
+@rows:
+    ld c,b
+@width:
+    ld b,0
+@cols:
+    ld a,(hl)
+    inc l
+    ld (de),a
+    inc de
+
+    djnz @-cols
+
+@next.line:
+    ld a,0
+    add l
+    ld l,a
+    jr nc,@+no.inc.h
+    inc h
+@no.inc.h:
+    ld b,c
+    djnz @-rows
+
+    ex de,hl
+    ld (var.ptr.background),hl
+
+    pop bc
+    pop de
+    pop hl
+
+    ret
+
+;===============================================================================
+@view.restore.background:
+; input
+;   iy = object
+;
+; TODO optimize
+;-------------------------------------------------------------------------------
+
+    push hl
+    push de
+    push bc
+
+    ld e,(iy+object.no)
+    sla e
+    ld d,lst.background / 256
+    ld a,(de)
+    ld l,a
+    inc e
+    ld a,(de)
+    ld h,a      ; -> hl = ptr.background
+
+    ; get screen address
+    ld e,(hl)
+    inc hl
+    ld d,(hl)
+    inc hl
+
+    bit 7,d
+    jr z,@leave
+
+    ; get dimension
+    ld c,(hl)
+    inc hl
+    ld b,(hl)
+    inc hl
+
+    srl c
+    ld a,c
+    ld (@+width+1),a
+    ld a,0x80
+    sub c
+    ld (@+next.line+1),a
+
+@rows:
+    ld c,b
+@width:
+    ld b,0
+@cols:
+    ld a,(hl)
+    inc hl
+    ld (de),a
+    inc e
+
+    djnz @-cols
+
+@next.line:
+    ld a,0
+    add e
+    ld e,a
+    jr nc,@no.inc.d
+    inc d
+
+if defined( false )
+    ; corrupting lower mem - sanity check
+    ld a,d
+    sub 0x80
+    jr c,@bad.screen.address
+    sub 0xe0 - 0x80
+    jr nc,@bad.screen.address
+endif
+
+@no.inc.d:
+    ld b,c
+    djnz @-rows
+
+@leave:
+    pop bc
+    pop de
+    pop hl
+
+    ret
+
+@bad.screen.address:
+    di
+    halt
 
 ;===============================================================================
 @get.ptr.view.header.hl:
@@ -436,6 +621,7 @@ view.add.to.pic:
 
 ;===============================================================================
 view.animate.obj:
+; animate only /initializes/ an object it, an object is not shown until draw
 ;-------------------------------------------------------------------------------
 
     ld (iy+object.no),b
@@ -462,10 +648,61 @@ view.unanimate.all:
 ;===============================================================================
 view.move.objects:
 ; called from main.game.loop
+;
+; normal loop:
+;   a draw all sprites on screen 0
+;   b switch visible screen
+;   c undraw all sprites on screen 1 - in reverse order
+;   d move sprites
+;   e draw all sprites on screen 1
+;   f switch visible screen
+;   g undraw all sprites on screen 0 - in reverse order
+;   h move sprites
+
 ;-------------------------------------------------------------------------------
 
-    ld a,page.screen
+    ; show other screen (drawn by previous round)
+    in a,(port.vmpr)
+    and %01111111
+    ld c,a
+
+    xor page.screen.2 - page.screen.1
+    out (port.vmpr),a
+
+    ld a,c
+    and video.memory.page.mask
     out (port.hmpr),a
+
+    ; undraw sprites in reverse order on other screen
+
+    ld hl,objects.active + objects.max
+    ld b,objects.max
+@loop:
+    dec l
+    ld a,(hl)
+    or a
+
+    jr z,@+skip.object
+
+    ld a,l
+
+    push hl
+    push bc
+
+    call @object.get.iy
+
+    call @view.restore.background
+
+    pop bc
+    pop hl
+
+@skip.object:
+
+    djnz @-loop
+
+    ; reset var.ptr.background
+    ld hl,ptr.background
+    ld (var.ptr.background),hl
 
     ld hl,objects.active
     ld b,objects.max
@@ -473,12 +710,13 @@ view.move.objects:
     ld a,(hl)
     or a
 
-    jr z,@skip
+    jr z,@+skip.object
+
+    ld a,l
 
     push hl
     push bc
 
-    ld a,l
     call @object.get.iy
 
     call @view.draw
@@ -486,7 +724,7 @@ view.move.objects:
     pop bc
     pop hl
 
-@skip:
+@skip.object:
     inc l
 
     djnz @-loop
@@ -500,9 +738,14 @@ view.draw:
     ld h,objects.active.high    ; animate or draw?
     ld (hl),1
 
+    ret
+
 @view.draw:
 ; input
 ;   iy = object
+
+    ld a,1
+    ld (@smc.call.store.background+1),a
 
     ld l,(iy+object.ptr.loop+0)
     ld h,(iy+object.ptr.loop+1)
@@ -669,11 +912,17 @@ view.draw:
     or a
     jr nz,@not.ego
 
+    in a,(port.hmpr)
+    push af
+
     ld a,page.main
     out (port.hmpr),a
 
     ld hl,main.var.ego_direction
     ld (hl),c
+
+    pop af
+    out (port.hmpr),a
 
 @not.ego:
     ld a,c
@@ -689,11 +938,17 @@ view.draw:
     ld (iy + object.step.size),a
 @step.size.not.set:
 
+    in a,(port.hmpr)
+    push af
+
     ld a,page.main
     out (port.hmpr),a
 
     ld a,(iy+object.move.doneflag)
     call @view.set.flag
+
+    pop af
+    out (port.hmpr),a
 
     ret
 
