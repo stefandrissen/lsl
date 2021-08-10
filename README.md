@@ -19,6 +19,10 @@ The data files used are from the original PC version, downloaded from [myabandon
 
 ## WIP
 
+- 2021-08-10 objects (sprites) are now mirrored when necessary, no more moonwalking for Larry
+
+[![](https://img.youtube.com/vi/2jFQ09XHzOA/0.jpg)](https://youtu.be/2jFQ09XHzOA)
+
 - 2021-08-06 sound playback at 60Hz, buffering screens, (re)storing object (sprite) backgrounds
 
 [![](https://img.youtube.com/vi/wklwWEloDvw/0.jpg)](https://youtu.be/wklwWEloDvw)
