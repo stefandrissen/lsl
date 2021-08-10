@@ -4,4 +4,11 @@
 
 logic.action.release.loop:
 
-    jp logic.action.nyi
+    ld b,(ix)   ; oA
+
+    ld hl,view.release.loop
+    call section.call.object
+
+    inc ix
+
+    ret

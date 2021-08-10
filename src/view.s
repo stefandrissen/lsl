@@ -189,6 +189,8 @@ view.add.to.pic:
     ld a,page.screen.draw
     out (port.hmpr),a
 
+    ld e,0
+
 ;-------------------------------------------------------------------------------
 @view.draw.cel:
 
@@ -196,11 +198,28 @@ view.add.to.pic:
     ;   hl = cel header
     ;   e' = x
     ;   d' = y
+    ;   e  = loop
 
     ld c,(hl)       ; width
     inc hl
     ld b,(hl)       ; height
     inc hl
+
+    ld a,(hl)       ; mirror / transparency
+
+    bit 7,a
+    jr z,@not.mirrored
+
+    and %01110000
+    rlca
+    rlca
+    rlca
+    rlca
+
+    cp e
+    jr nz,@mirrored
+
+@not.mirrored:
 
     exx
     ld a,d          ; y
@@ -209,7 +228,7 @@ view.add.to.pic:
 
     ld de,ptr.screen + screen.offset.to.center
     srl a
-    jr nc,@even
+    jr nc,@+even
     set 7,e
 @even:
     add a,d
@@ -241,17 +260,17 @@ view.add.to.pic:
     rlca
     rlca
     rlca
-    ld (@transparent+1),a
+    ld (@+transparent+1),a
 
 @height:
 
-    push de
+    push de         ; de = screen address
     push bc
 @width:
     ld a,(hl)       ; AX - X pixels of colour A
     inc hl
     or a
-    jr z,@eol
+    jr z,@+eol
 
     and 0x0f
     ld b,a
@@ -262,35 +281,35 @@ view.add.to.pic:
     and 0xf0
 @transparent:
     cp 0
-    jr nz,@pixel
+    jr nz,@+pixel
 @chunk.transparent:
     bit 0,c
-    jr z,@even
+    jr z,@+even
     inc e
 @even:
     inc c
 
-    djnz @chunk.transparent
+    djnz @-chunk.transparent
 
-    jr @width
+    jr @-width
 
 @pixel:
-    ld (@even.pixel.colour+1),a
+    ld (@+even.pixel.colour+1),a
     rrca
     rrca
     rrca
     rrca
-    ld (@odd.pixel.colour+1),a
+    ld (@+odd.pixel.colour+1),a
 @chunk:
     bit 0,c
-    jr nz,@odd
+    jr nz,@+odd
 
     ld a,(de)
     and 0x0f
 @even.pixel.colour:
     or 0
     ld (de),a
-    jr @continue
+    jr @+continue
 
 @odd:
     ld a,(de)
@@ -303,21 +322,150 @@ view.add.to.pic:
 @continue:
     inc c
 
-    djnz @chunk
+    djnz @-chunk
 
-    jr @width
+    jr @-width
 @eol:
     pop bc
     pop de
     bit 7,e
-    jr z,@even
+    jr z,@+even
     res 7,e
     inc d
-    jr @odd
+    jr @+odd
 @even:
     set 7,e
 @odd:
-    djnz @height
+    djnz @-height
+
+    ret
+
+;-------------------------------------------------------------------------------
+@mirrored:
+
+    exx
+    ld a,d          ; y
+    exx
+    sub b           ; height, y = /bottom/ of view
+
+    ld de,ptr.screen + screen.offset.to.center
+    srl a
+    jr nc,@+even
+    set 7,e
+@even:
+    add a,d
+    ld d,a
+
+    exx
+    ld a,e          ; x
+    exx
+
+    push af
+
+    srl a
+    add e
+    ld e,a          ; e = screen x
+
+    ld a,(@smc.call.store.background)
+    or a
+    call nz,@view.store.background
+
+    dec c
+    ld a,c  ; width
+    srl a   ; hmmm
+    add a,e
+    ld e,a
+
+    pop af
+
+    add a,c         ; x + width
+    ld c,a          ; keep real x in c
+
+    ld a,(hl)       ; transparency
+    inc hl
+
+    and 0x0f
+    rlca
+    rlca
+    rlca
+    rlca
+    ld (@+transparent+1),a
+
+@height:
+
+    push de         ; de = screen address
+    push bc
+@width:
+    ld a,(hl)       ; AX - X pixels of colour A
+    inc hl
+    or a
+    jr z,@+eol
+
+    and 0x0f
+    ld b,a
+
+    dec hl
+    ld a,(hl)
+    inc hl
+    and 0xf0
+@transparent:
+    cp 0
+    jr nz,@+pixel
+@chunk.transparent:
+    bit 0,c
+    jr nz,@+odd
+    dec e
+@odd:
+    dec c
+
+    djnz @-chunk.transparent
+
+    jr @-width
+
+@pixel:
+    ld (@+even.pixel.colour+1),a
+    rrca
+    rrca
+    rrca
+    rrca
+    ld (@+odd.pixel.colour+1),a
+@chunk:
+    bit 0,c
+    jr nz,@+odd
+
+    ld a,(de)
+    and 0x0f
+@even.pixel.colour:
+    or 0
+    ld (de),a
+    dec e
+    jr @+continue
+
+@odd:
+    ld a,(de)
+    and 0xf0
+@odd.pixel.colour:
+    or 0
+    ld (de),a
+
+@continue:
+    inc c
+
+    djnz @-chunk
+
+    jr @-width
+@eol:
+    pop bc
+    pop de
+    bit 7,e
+    jr z,@+even
+    res 7,e
+    inc d
+    jr @+odd
+@even:
+    set 7,e
+@odd:
+    djnz @-height
 
     ret
 
@@ -363,6 +511,8 @@ view.add.to.pic:
     inc hl
 
     ; store dimension
+    inc c       ; TODO srl c below is truncating width - just compensate for now
+    inc c       ; TODO why an additional inc?
     ld (hl),c   ; width
     inc hl
     ld (hl),b   ; height
@@ -634,6 +784,19 @@ view.animate.obj:
     ld h,objects.active.high
 ;    ld (hl),0       ; how does animate relate to draw?
 
+    push iy
+    pop hl
+    inc hl
+    xor a
+    ld b,object.length - 1
+@loop:
+    ld (hl),a
+    inc hl
+    djnz @-loop
+
+    ;set loops
+
+
     ret
 
 ;===============================================================================
@@ -768,6 +931,7 @@ view.draw:
 
     exx
 
+    ld e,(iy + object.loop)
     call @view.draw.cel
 
     ; update object
@@ -908,10 +1072,20 @@ view.draw:
     ld a,(iy+object.step.size)
 
     call @find.direction
+    ld c,a
+
+    cp (iy + object.direction)
+    jr z,@same.direction
 
     ld (iy + object.direction),a
 
-    ld c,a
+    bit object.flag.loop_fixed,(iy + object.flags)
+    push bc
+    call z,@change.loop
+    pop bc
+
+@same.direction:
+
     ld a,(iy+object.no)
     or a
     jr nz,@not.ego
@@ -955,6 +1129,73 @@ view.draw:
     out (port.hmpr),a
 
     ret
+
+;-------------------------------------------------------------------------------
+@change.loop:
+; change loop based on direction if loops <= 4
+
+    ld hl,@lst.select.loop
+    rlca
+    add a,l
+    ld l,a
+    jr nc,@+nc
+    inc h
+@nc:
+    ld a,(hl)
+    inc hl
+    ld h,(hl)
+    ld l,a
+
+    ld a,(iy + object.loops)
+    cp 5
+    ret nc
+
+    jp (hl)
+
+@lst.select.loop:
+    defw @select.loop.stationary
+    defw @select.loop.north
+    defw @select.loop.north.east
+    defw @select.loop.east
+    defw @select.loop.south.east
+    defw @select.loop.south
+    defw @select.loop.south.west
+    defw @select.loop.west
+    defw @select.loop.north.west
+
+@select.loop.stationary:
+
+    ret
+
+@select.loop.north:
+
+    ld c,3
+    cp c
+    ret c
+    jp view.set.loop
+
+@select.loop.north.east:
+@select.loop.east:
+@select.loop.south.east:
+
+    ld c,0
+    jp view.set.loop
+
+@select.loop.south:
+
+    cp 3
+    ret c
+    ld c,2
+    jp view.set.loop
+
+@select.loop.south.west:
+@select.loop.west:
+@select.loop.north.west:
+
+    ld c,1
+    cp c
+    ret c
+    jp view.set.loop
 
 ;-------------------------------------------------------------------------------
 @view.set.flag:
@@ -1147,8 +1388,7 @@ view.erase:
 ;-------------------------------------------------------------------------------
 view.fix.loop:
 
-    ; TODO - but since direction does not automatically choose loop, not
-    ;        a problem yet
+    set object.flag.loop_fixed,(iy + object.flags )
 
     ret
 
@@ -1164,6 +1404,13 @@ view.position:
 
     ld (iy + object.x),e
     ld (iy + object.y),d
+    ret
+
+;-------------------------------------------------------------------------------
+view.release.loop:
+
+    res object.flag.loop_fixed,(iy + object.flags )
+
     ret
 
 ;-------------------------------------------------------------------------------
@@ -1219,8 +1466,21 @@ view.set.view:
     ld (iy + object.ptr.view + 0),l
     ld (iy + object.ptr.view + 1),h
 
+    inc hl
+    inc hl
+    ld a,(hl)
+    ld (iy + object.loops),a
+    dec hl
+    dec hl
+
     ld a,0
-    jr @set.loop
+    call @set.loop  ; always set.loop in case change.loop does not initialise
+
+    bit object.flag.loop_fixed,(iy + object.flags)
+    ret nz
+
+    ld a,(iy + object.direction)
+    jp @change.loop
 
 ;-------------------------------------------------------------------------------
 view.set.loop:
