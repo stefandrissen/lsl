@@ -92,6 +92,10 @@ resource.load:
     call @update.sp
     defb -0x80                      ; move sp back to section A
 
+    ld a,page.snd
+    out (port.hmpr),a
+    call snd.restore.interrupts
+
 @store.hmpr:
 
     ld a,0

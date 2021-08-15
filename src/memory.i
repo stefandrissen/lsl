@@ -25,6 +25,7 @@ ptr.picdir:                 equ 0x8000 + 0x1000 ; drawing code
 
 page.snd:               equ 10
 snd.interrupt.handler:      equ 0x8000
+snd.restore.interrupts:     equ 0x8003
 ptr.snddir:                 equ 0x8000 + 0x1000 ; sound code
 
 ; screen pages must be even (bottom bit vmpr ignored)

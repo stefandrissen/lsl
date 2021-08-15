@@ -80,6 +80,7 @@ maskable.interrupt:
     ld (@port.hmpr+1),a
 
     in a,(port.status)
+    xor 0xff
     and interrupt.line | interrupt.frame
 
     push af

@@ -16,6 +16,10 @@ snd.interrupt.handler:
 
     jp snd.play
 
+snd.restore.interrupts:
+
+    jp @snd.restore.interrupts
+
 sounds:
 sounds.high:    equ sounds / &100
 
@@ -44,6 +48,7 @@ sound:
 
 ; to approximate 60Hz playback (312 scan lines, 192 visible)
 ;-------------------------------------------------------------------------------
+    defb  -1    ; frame interrupt
     defb 191    ; should be 200
     defb 148
     defb  96
@@ -81,15 +86,13 @@ snd.play:
 @frame:
     cp -1
     jr nz,@ret
-
-    ld a,(hl)
-@line.ok:
-    inc hl
-    out (port.line_interrupt),a
-    inc a
-    jr nz,@nz
     ld hl,@interrupt.lines
-@nz:
+
+@line.ok:
+
+    inc hl
+    ld a,(hl)
+    out (port.line_interrupt),a
     ld (@smc.hl+1),hl
 
     pop hl
@@ -638,6 +641,23 @@ snd.sound:
     inc l
     ld h,(hl)
     ld l,a
+
+    ret
+
+;-------------------------------------------------------------------------------
+@snd.restore.interrupts:
+
+; when samdos is called, sam rom interrupts get a chance to fire. sam rom
+; interrupts meddle with line interrupts for palette a,b line y handling, thus
+; turning line interrupts off
+
+    push hl
+
+    ld hl,(@smc.hl + 1)
+    ld a,(hl)
+    out (port.line_interrupt),a
+
+    pop hl
 
     ret
 
