@@ -1,16 +1,19 @@
 ; section.i
 
-;-------------------------------------------------------------------------------
+ ;-------------------------------------------------------------------------------
 ; addresses which cannot be resolved at assembly time
 
-main.flags:                 equ 0x0100
-main.vars:                  equ 0x0200
+ main.flags:                 equ 0x0100
+ main.vars:                  equ 0x0200
     main.var.ego_direction:     equ 0x0206
 
-;===============================================================================
+ ;===============================================================================
 section.call.pic:
-;   change bank AB to pic - identical code in bank pic
-;-------------------------------------------------------------------------------
+ ;   change bank AB to pic - identical code in bank pic
+
+ ; input
+ ;   hl = routine
+ ;-------------------------------------------------------------------------------
 
     in a,(port.hmpr)
     push af
@@ -19,15 +22,18 @@ section.call.pic:
     out (port.lmpr),a
 
     ld (@call+1),hl
-@call:
+ @call:
     call 0
 
-    jr @return
+    jr @section.return
 
-;===============================================================================
+ ;===============================================================================
 section.call.view:
-;   change bank AB to view - identical code in bank view
-;-------------------------------------------------------------------------------
+ ;   change bank AB to view - identical code in bank view
+
+ ; input
+ ;   ix = routine
+ ;-------------------------------------------------------------------------------
 
     in a,(port.hmpr)
     push af
@@ -36,19 +42,19 @@ section.call.view:
     out (port.lmpr),a
 
     ld (@call+1),ix
-@call:
+ @call:
     call 0
 
-    jr @return
+    jr @section.return
 
-;===============================================================================
+ ;===============================================================================
 section.call.object:
-;   change bank AB to view - identical code in bank view
-;
-; input
-;   b  = object
-;   hl = routine
-;-------------------------------------------------------------------------------
+ ;   change bank AB to view - identical code in bank view
+
+ ; input
+ ;   b  = object
+ ;   hl = routine
+ ;-------------------------------------------------------------------------------
 
     in a,(port.hmpr)
     push af
@@ -58,9 +64,9 @@ section.call.object:
 
     call view.object.call
 
-;-------------------------------------------------------------------------------
+ ;-------------------------------------------------------------------------------
 
-@return:
+@section.return:
     ld a,page.main | low.memory.ram.0
     out (port.lmpr),a
 
@@ -69,9 +75,9 @@ section.call.object:
 
     ret
 
-;-------------------------------------------------------------------------------
+ ;-------------------------------------------------------------------------------
     defs 0x0038 - $
-;-------------------------------------------------------------------------------
+ ;-------------------------------------------------------------------------------
 maskable.interrupt:
 
     push af
@@ -100,7 +106,7 @@ maskable.interrupt:
 maskable.interrupt.handler:
     call 0  ; set to main.update.frames by set.interrupt.handler
 
-@port.hmpr:
+ @port.hmpr:
     ld a,0
     out (port.hmpr),a
 
@@ -109,9 +115,10 @@ maskable.interrupt.handler:
     ei
     ret
 
-;-------------------------------------------------------------------------------
+ ;-------------------------------------------------------------------------------
+
     defs 0x0066 - $
-;-------------------------------------------------------------------------------
+ ;-------------------------------------------------------------------------------
 non.maskable.interrupt:
 
     ret
