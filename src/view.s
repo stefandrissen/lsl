@@ -1210,7 +1210,7 @@ view.draw:
     ld a,page.main
     out (port.hmpr),a
 
-    ld c,a
+    ld a,c
 
     ld h,main.flags / 0x100 + 0x80
 
