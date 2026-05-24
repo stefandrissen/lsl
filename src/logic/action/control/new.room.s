@@ -40,9 +40,12 @@ logic.action.new.room:
 
     ; call logic.action.player.control
 ; d.
-    ; call logic.action.unblock
+    push af
+    call logic.action.unblock
 ; e.
-    ; call logic.action.set.horizon
+    ld a,36
+    call logic.action.set.horizon
+    pop af
 ; f.
     ld hl,var.current_room_number
     ld b,(hl)
@@ -62,15 +65,6 @@ logic.action.new.room:
 ; k.
     ld a,flag.room_script_first_time
     call flag.set
-
-;    ld a,page.boot
-;    out (port.hmpr),a
-
-;    ld ix,(obj.logdir + obj.last.start)
-;   execution loop needs to be aborted
-
-;    ld a,(obj.logdir + obj.page)
-;    out (port.hmpr),a
 
     pop hl  ; toss return address execute to escape loop
 
