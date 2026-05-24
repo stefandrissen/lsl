@@ -1,4 +1,4 @@
-; set.horizon(Y); TODO
+; set.horizon(Y);
 
 ; The horizon's vertical position is set to Y. The horizon is an invisible
 ; horizontal line, usually near the top of the screen. The default value for the
@@ -7,15 +7,9 @@
 
 logic.action.set.horizon:
 
-if defined( strict )
-
-    jp logic.action.nyi
-
-else
-
     ld a,(ix)   ; Y
     inc ix
 
-    ret
+    ld (internal.var.horizon),a
 
-endif
+    ret

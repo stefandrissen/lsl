@@ -291,6 +291,7 @@ internal.var.blocks: defb 0
 internal.var.control: defb enum.control.player
     enum.control.program: equ 0
     enum.control.player:  equ 1
+internal.var.horizon: defb 0
 
     org $ - 0x8000
 
