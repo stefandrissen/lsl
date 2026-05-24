@@ -129,6 +129,8 @@ object.0:
         object.flag.on_land:        equ 6
         object.flag.loop_fixed:     equ 7
 
+    object.loop.flag:       defb 0   ; set by end.of.loop
+
 
     object.length: equ $
     org object.0 + object.length
@@ -948,6 +950,15 @@ view.draw:
     inc a
     cp (iy+object.cels)
     jr c,@cels.gt.cel
+
+    ld a,(iy+object.cycle)
+    cp enum.cycle.end.of.loop
+    jr nz,@not.end.of.loop
+
+    ld c,(iy+object.loop.flag)
+    call @view.set.flag
+
+   @not.end.of.loop:
     ld a,0
 @cels.gt.cel:
     ld (iy+object.cel),a
@@ -1116,19 +1127,8 @@ view.draw:
     ld (iy + object.step.size),a
 @step.size.not.set:
 
-    in a,(port.hmpr)
-    push af
-
-    ld a,page.main
-    out (port.hmpr),a
-
-    ld a,(iy+object.move.doneflag)
-    call @view.set.flag
-
-    pop af
-    out (port.hmpr),a
-
-    ret
+    ld c,(iy+object.move.doneflag)
+    jp @view.set.flag
 
 ;-------------------------------------------------------------------------------
 @change.loop:
@@ -1197,10 +1197,21 @@ view.draw:
     ret c
     jp view.set.loop
 
-;-------------------------------------------------------------------------------
+ ;-------------------------------------------------------------------------------
 @view.set.flag:
-;
-;-------------------------------------------------------------------------------
+
+ ;  input
+ ;  - c = flag to set
+
+ ;-------------------------------------------------------------------------------
+    in a,(port.hmpr)
+    push af
+
+    ld a,page.main
+    out (port.hmpr),a
+
+    ld c,a
+
     ld h,main.flags / 0x100 + 0x80
 
     ld l,a
@@ -1217,6 +1228,9 @@ view.draw:
 
 @smc.bit:
     set 0,(hl)  ; or res n,(hl) or bit n,(hl)
+
+    pop af
+    out (port.hmpr),a
 
     ret
 
@@ -1481,6 +1495,14 @@ view.set.view:
 
     ld a,(iy + object.direction)
     jp @change.loop
+
+;-------------------------------------------------------------------------------
+view.end.of.loop:
+
+    ld (iy + object.loop.flag),c
+    ld (iy + object.cycle),enum.cycle.end.of.loop
+
+    ret
 
 ;-------------------------------------------------------------------------------
 view.set.loop:

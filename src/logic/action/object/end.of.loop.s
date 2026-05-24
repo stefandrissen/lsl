@@ -12,9 +12,16 @@ if defined( strict )
 
 else
 
-    ld a,(ix)   ; oA
+    ld b,(ix)   ; oA
     inc ix
-    ld b,(ix)   ; fB
+
+    ld a,(ix)   ; fB
+    call flag.reset
+
+    ld c,(ix)   ; fB
+    ld hl,view.end.of.loop
+    call section.call.object
+
     inc ix
 
     ret
