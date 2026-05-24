@@ -552,6 +552,6 @@ include "test/invalid.s"
 include "message.get.hl.s"
 include "string.get.de.s"
 
-if defined( debugActions )
+if defined( debug )
   include "action/debug.s"
 endif

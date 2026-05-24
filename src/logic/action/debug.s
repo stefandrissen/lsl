@@ -2,7 +2,13 @@ debug.enable:
 
     push af
     xor a
-    jr @set.debug
+    ld (logic.action.debug),a
+    ld (logic.test.debug),a
+    pop af
+    dec ix
+    call logic.action.debug
+    inc ix
+    ret
 
 debug.disable:
 
