@@ -5,4 +5,7 @@
 
 logic.action.ignore.blocks:
 
-    jp logic.action.nyi
+    xor a
+    ld (internal.var.blocks),a
+
+    ret
