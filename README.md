@@ -19,6 +19,10 @@ The data files used are from the original PC version, downloaded from [myabandon
 
 ## WIP
 
+- 2026-05-24 Space Quest I attempts to start
+
+[![](https://img.youtube.com/vi/A1Uep13j-bQ/0.jpg)](https://youtu.be/A1Uep13j-bQ)
+
 - 2021-08-10 objects (sprites) are now mirrored when necessary, no more moonwalking for Larry
 
 [![](https://img.youtube.com/vi/2jFQ09XHzOA/0.jpg)](https://youtu.be/2jFQ09XHzOA)
