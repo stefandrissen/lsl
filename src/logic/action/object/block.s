@@ -12,7 +12,17 @@
 
 logic.action.block:
 
-    jp logic.action.nyi
+    push ix
+    pop hl
+    ld de,internal.var.block.x1
+    ldi
+    ldi
+    ldi
+    ldi
+    push hl
+    pop ix
+
+    ret
 
 ;-------------------------------------------------------------------------------
 
@@ -22,4 +32,14 @@ logic.action.block:
 
 logic.action.unblock:
 
-    jp logic.action.nyi
+    xor a
+    ld hl,internal.var.block.x1
+    ld (hl),a
+    inc hl
+    ld (hl),a
+    inc hl
+    ld (hl),a
+    inc hl
+    ld (hl),a
+
+    ret
