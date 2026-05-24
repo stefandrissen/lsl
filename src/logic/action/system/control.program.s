@@ -11,15 +11,6 @@
 
 logic.action.program.control:
 
-if defined( strict )
-
-    jp logic.action.nyi
-
-else
-
-    ; TODO
-
+    xor a
+    ld (internal.var.control),a
     ret
-
-
-endif
