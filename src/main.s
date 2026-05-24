@@ -1,6 +1,6 @@
 ; Z80 AGI for Leisure Suit Larry In The Land Of The Lounge Lizards
 ;
-; (C) 2016-2021 Stefan Drissen
+; (C) 2016-2026 Stefan Drissen
 ;
 ; data files:
 ;    http://www.myabandonware.com/game/leisure-suit-larry-in-the-land-of-the-lounge-lizards-bl
@@ -76,21 +76,21 @@ var.previous_room_number:       defb 0          ; v1 previousRoom
 var.border_touched_ego:         defb 0          ; v2 edgeEgoHit
 var.current_score:              defb 0          ; v3 currentScore
 var.object_touched_border:      defb 0          ; v4 objHitEdge
-    enum.border_none:               equ 0
-    enum.border_top_or_horizon:     equ 1
-    enum.border_right:              equ 2
-    enum.border_bottom:             equ 3
-    enum.border_left:               equ 4
+    enum.border.none:               equ 0
+    enum.border.top_or_horizon:     equ 1
+    enum.border.right:              equ 2
+    enum.border.bottom:             equ 3
+    enum.border.left:               equ 4
 var.edge_obj_hit:               defb 0          ; v5 edgeObjHit
 main.var.ego_direction:         defb 0          ; v6 egoDir
-    enum.direction_up:              equ 1
-    enum.direction_up_right:        equ 2
-    enum.direction_right:           equ 3
-    enum.direction_right_down:      equ 4
-    enum.direction_down:            equ 5
-    enum.direction_down_left:       equ 6
-    enum.direction_left:            equ 7
-    enum.direction_left_up:         equ 8
+    enum.direction.up:              equ 1
+    enum.direction.up_right:        equ 2
+    enum.direction.right:           equ 3
+    enum.direction.right_down:      equ 4
+    enum.direction.down:            equ 5
+    enum.direction.down_left:       equ 6
+    enum.direction.left:            equ 7
+    enum.direction.left_up:         equ 8
 
 var.maximum_score:              defb 0          ; v7 maxScore
 var.free_pages:                 defb 0          ; v8 memoryLeft
@@ -129,6 +129,12 @@ var.monitor_type:               defb 3          ; v26 monitorType
 ; - 230 'user' variables
     defs 230
 ;-------------------------------------------------------------------------------
+; - 256 inventory object locations
+
+object.locations:
+object.locations.high:  equ object.locations \ 0x100
+
+    defs 256
 
 ;-------------------------------------------------------------------------------
 
@@ -187,7 +193,7 @@ main.game.loop:
 
     ; 6. execute logic
 
-    ld a,0
+    ld a,0              ; main loop always executes logic 0
     call logic.execute
 
     ; 7. test new.room
@@ -281,6 +287,8 @@ main.update.frames:
     ret
 
 var.frames: defb 0  ; increased by interrupt, flows over to var.seconds
+internal.var.blocks: defb 0
+internal.var.control: defb 1
 
     org $ - 0x8000
 
