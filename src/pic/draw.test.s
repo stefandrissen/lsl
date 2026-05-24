@@ -5,7 +5,7 @@
 
 @var.port.low: defb 0
 
-if defined( test-draw )
+if defined( testDraw )
 
         org 0x8000
         dump 1,0
@@ -35,7 +35,7 @@ if defined( test-draw )
     @draw.command.fill:             equ 0xf8
     @draw.command.exit:             equ 0xff
 
-    if defined(draw-line-test)
+    if defined( testDrawLine )
 
         @draw.test:
             defb @draw.command.picture.color, 15
@@ -59,7 +59,7 @@ if defined( test-draw )
 
     endif
 
-    if defined(draw-fill-test)
+    if defined( testDrawFill )
 
         @draw.test:
             defb @draw.command.picture.color, 1

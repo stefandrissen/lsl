@@ -111,7 +111,7 @@ pic.draw:
     jr @exit
 
 
-if defined( picdraw-debug )
+if defined( debugPicDraw )
 
     @pause:
 
@@ -159,7 +159,7 @@ endif
 
 @err.picture:
 
-    if defined( picdraw-debug )
+    if defined( debugPicDraw )
         ld e,a
         ld hl,@text.error
         call util.print.string
@@ -511,7 +511,7 @@ endif
 
 @error.out.of.bounds:
 
-if defined( picdraw-debug )
+if defined( definePicDraw )
 
     ld hl,@text.error
     call util.print.string

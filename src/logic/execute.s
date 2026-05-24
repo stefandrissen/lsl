@@ -51,22 +51,9 @@ logic.execute:
     or a
     ret z
 
-    if defined( debug-actions )
-        push af
-        call util.print.ix
-        call util.print.space
-        pop af
-        push af
-        call util.print.hex
-        call util.print.space
-        ld a,(ix+1)
-        call util.print.hex
-        call util.print.space
-        ld a,(ix+2)
-        call util.print.hex
-        call util.print.lf
-        pop af
-    endif
+  if defined( debugActions )
+    call logic.action.debug
+  endif
 
     inc ix
 
@@ -525,10 +512,14 @@ logic.call.test:
 ; call test using jump table
 ;-------------------------------------------------------------------------------
 
-    if defined(debug)
-        cp 0x13
-        jp nc,logic.test.invalid
-    endif
+  if defined( debug )
+    cp 0x13
+    jp nc,logic.test.invalid
+  endif
+
+  if defined( debugActions )
+    call logic.test.debug
+  endif
 
     ld hl,@tests
     ld e,a
@@ -561,3 +552,6 @@ include "test/invalid.s"
 include "message.get.hl.s"
 include "string.get.de.s"
 
+if defined( debugActions )
+  include "action/debug.s"
+endif

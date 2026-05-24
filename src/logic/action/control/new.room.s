@@ -23,6 +23,17 @@ logic.action.new.room:
 
 @new.room:
 
+   if defined( debugRoom )
+    push af
+    push ix
+    dec ix
+    cp debugRoom
+    ld a,(ix)
+    call z,debug.enable
+    pop ix
+    pop af
+   endif
+
     inc ix
 
 ; a. TODO - first need objects :-)
@@ -37,8 +48,8 @@ logic.action.new.room:
     ld b,(hl)
     inc l           ; -> hl = var.previous_room_number
     ld (hl),b
-    dec l           ; -> hl = var.current_room_number
 ; g.
+    dec l           ; -> hl = var.current_room_number
     ld (hl),a
 ; h. TODO - first need a view
 

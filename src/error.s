@@ -1,6 +1,8 @@
 ;===============================================================================
 error:
 
+    call util.print.reset
+
     push hl
     call util.print.ix
     pop hl
