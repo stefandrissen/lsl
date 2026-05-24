@@ -6,12 +6,6 @@
 
 logic.action.end.of.loop:
 
-if defined( strict )
-
-    jp logic.action.nyi
-
-else
-
     ld b,(ix)   ; oA
     inc ix
 
@@ -25,5 +19,3 @@ else
     inc ix
 
     ret
-
-endif
