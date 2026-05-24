@@ -21,6 +21,7 @@ logic.load.script:
 ; a = logic resource to load
 ; -----------------------------------------------------------------------------
 
+    push ix
     push hl
     push de
     push bc
@@ -131,4 +132,6 @@ logic.load.script:
     pop bc
     pop de
     pop hl
+    pop ix
+
     ret
