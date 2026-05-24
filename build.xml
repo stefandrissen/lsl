@@ -15,22 +15,17 @@
 		<attribute name="debug" default="" />
 		<attribute name="debugActions" default="" />
 		<attribute name="debugRoom" default="" />
-		<attribute name="silent" default="" />
+		<attribute name="noSound" default="" />
 		<sequential xmlns:if="ant:if">
 
 			<echo message="assembling '@{source}'" />
-
-			<local name="debug" />
-			<property name="debug" value="true" if:true="@{debugRoom}" />
-			<property name="debug" value="true" if:true="@{debugActions}" />
-			<property name="debug" value="true" if:true="@{debug}" />
 
 			<exec executable="${python}" failonerror="true">
 				<arg value="${pyz80}" />
 				<arg line="-D debug" if:true="@{debug}" />
 				<arg line="-D debugActions" if:true="@{debugActions}" />
 				<arg line="-D debugRoom=@{debugRoom}" unless:blank="@{debugRoom}" />
-				<arg line="-D silent" if:true="@{silent}" />
+				<arg line="-D noSound" if:true="@{noSound}" />
 				<arg value="--importfile=obj/symbols" if:true="@{importSymbols}" />
 				<arg value="--exportfile=obj/symbols" />
 				<arg value="--obj=obj/@{source}" />
@@ -53,7 +48,7 @@
 		<attribute name="importSymbols" default="" />
 		<attribute name="game" />
 		<attribute name="debug" default="false" />
-		<attribute name="silent" default="false" />
+		<attribute name="noSound" default="false" />
 
 		<sequential>
 
@@ -78,7 +73,7 @@
 				<arg line="-o obj/@{game}.dsk" />
 				<arg line="-D debug" if:true="@{debug}" />
 				<arg line="-D debugActions" if:true="@{debug}" />
-				<arg line="-D silent" if:true="@{silent}" />
+				<arg line="-D noSound" if:true="@{noSound}" />
 				<arg value="--mapfile=obj/@{game}.map" />
 				<arg value="src/@{source}.s" />
 			</exec>
@@ -94,23 +89,29 @@
 
 	<macrodef name="samagi">
 		<attribute name="game" />
-		<attribute name="silent" default="" />
+		<attribute name="noSound" default="" />
 		<attribute name="debug" default="" />
 		<attribute name="debugActions" default="" />
 		<attribute name="debugRoom" default="" />
 
 		<sequential>
 
-			<!-- first pass assembly of boot for symbols -->
-			<assemble source="boot" debug="@{debug}" />
+			<local name="debug" />
+			<property name="debug" value="true" if:true="@{debugRoom}" />
+			<property name="debug" value="true" if:true="@{debugActions}" />
+			<property name="debug" value="true" if:true="@{debug}" />
+			<property name="debug" value="false" />
+
+			<!-- first pass assembly of boot for symbols - lllll fails when debug false -->
+			<assemble source="boot" debug="true" />
 			<delete file="obj/boot" />
 
-			<assemble source="view" debug="@{debug}" silent="@{silent}" importSymbols="true" />
-			<assemble source="pic" debug="@{debug}" silent="@{silent}" importSymbols="true" />
-			<assemble source="snd" debug="@{debug}" silent="@{silent}" importSymbols="true" />
-			<assemble source="main" debug="@{debug}" silent="@{silent}" debugActions="@{debugActions}" debugRoom="@{debugRoom}" importSymbols="true" />
+			<assemble source="view" debug="${debug}" noSound="@{noSound}" importSymbols="true" />
+			<assemble source="pic" debug="${debug}" noSound="@{noSound}" importSymbols="true" />
+			<assemble source="snd" debug="${debug}" noSound="@{noSound}" importSymbols="true" />
+			<assemble source="main" debug="${debug}" noSound="@{noSound}" debugActions="@{debugActions}" debugRoom="@{debugRoom}" importSymbols="true" />
 
-			<create-disk game="@{game}" source="boot" additional.1="main" additional.2="view" additional.3="pic" additional.4="snd" silent="@{silent}" importSymbols="true" />
+			<create-disk game="@{game}" source="boot" additional.1="main" additional.2="view" additional.3="pic" additional.4="snd" noSound="@{noSound}" importSymbols="true" />
 
 			<concat destfile="obj/@{game}.map" append="true">
 				<fileset dir="obj" includes="view.map main.map snd.map pic.map" />
@@ -129,9 +130,9 @@
 
 	</target>
 
-	<target name="lllll-silent" description="Leisure Suit Larry In The Land Of The Lounge Lizards">
+	<target name="lllll no sound" description="Leisure Suit Larry In The Land Of The Lounge Lizards">
 
-		<samagi game="lllll" silent="true" />
+		<samagi game="lllll" noSound="true" />
 
 	</target>
 

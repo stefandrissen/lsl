@@ -97,7 +97,7 @@ snd.play:
 
     pop hl
 
-if defined( silent )
+if defined( noSound )
     ret
 endif
 
