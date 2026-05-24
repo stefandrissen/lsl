@@ -1,30 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="samagi">
+<project name="samagi"
+	xmlns:if="ant:if"
+	xmlns:unless="ant:unless">
 
 	<property environment="env" />
 
-	<property name="python" location="../../AppData/Local/Programs/Python/Python38/python.exe" />
-	<property name="pyz80" location="../pyz80/pyz80.py" />
-	<property name="simcoupe" location="${env.ProgramFiles(x86)}/SimCoupe/SimCoupe.exe" />
+	<property file=".properties" />
 
 	<!-- assemble -->
 
 	<macrodef name="assemble">
 		<attribute name="source" default="main" />
-		<attribute name="import-symbols" default="false" />
-		<attribute name="debug" default="false" />
-		<attribute name="debug-actions" default="false" />
-		<attribute name="silent" default="false" />
+		<attribute name="importSymbols" default="" />
+		<attribute name="debug" default="" />
+		<attribute name="debugActions" default="" />
+		<attribute name="debugRoom" default="" />
+		<attribute name="silent" default="" />
 		<sequential xmlns:if="ant:if">
 
 			<echo message="assembling '@{source}'" />
 
+			<local name="debug" />
+			<property name="debug" value="true" if:true="@{debugRoom}" />
+			<property name="debug" value="true" if:true="@{debugActions}" />
+			<property name="debug" value="true" if:true="@{debug}" />
+
 			<exec executable="${python}" failonerror="true">
 				<arg value="${pyz80}" />
 				<arg line="-D debug" if:true="@{debug}" />
-				<arg line="-D debug-actions" if:true="@{debug-actions}" />
+				<arg line="-D debugActions" if:true="@{debugActions}" />
+				<arg line="-D debugRoom=@{debugRoom}" unless:blank="@{debugRoom}" />
 				<arg line="-D silent" if:true="@{silent}" />
-				<arg value="--importfile=obj/symbols" if:true="@{import-symbols}" />
+				<arg value="--importfile=obj/symbols" if:true="@{importSymbols}" />
 				<arg value="--exportfile=obj/symbols" />
 				<arg value="--obj=obj/@{source}" />
 				<!-- <arg value="-e" /> -->
@@ -43,12 +50,12 @@
 		<attribute name="additional.2" default="" />
 		<attribute name="additional.3" default="" />
 		<attribute name="additional.4" default="" />
-		<attribute name="import-symbols" default="false" />
+		<attribute name="importSymbols" default="" />
 		<attribute name="game" />
 		<attribute name="debug" default="false" />
 		<attribute name="silent" default="false" />
 
-		<sequential xmlns:if="ant:if" xmlns:unless="ant:unless">
+		<sequential>
 
 			<echo message="create-disk '@{source}'" />
 
@@ -63,15 +70,14 @@
 				<arg line="-I gamefiles/@{game}/vol.0" />
 				<arg line="-I gamefiles/@{game}/vol.1" />
 				<arg line="-I gamefiles/@{game}/vol.2" />
-				<arg line="-I gamefiles/@{game}/object" />
 				<arg line="-I obj/@{additional.1}" unless:blank="@{additional.1}" />
 				<arg line="-I obj/@{additional.2}" unless:blank="@{additional.2}" />
 				<arg line="-I obj/@{additional.3}" unless:blank="@{additional.3}" />
 				<arg line="-I obj/@{additional.4}" unless:blank="@{additional.4}" />
-				<arg line="--importfile=obj/symbols" if:true="@{import-symbols}" />
+				<arg line="--importfile=obj/symbols" if:true="@{importSymbols}" />
 				<arg line="-o obj/@{game}.dsk" />
 				<arg line="-D debug" if:true="@{debug}" />
-				<arg line="-D xdebug-actions" if:true="@{debug}" />
+				<arg line="-D debug-actions" if:true="@{debug}" />
 				<arg line="-D silent" if:true="@{silent}" />
 				<arg value="--mapfile=obj/@{game}.map" />
 				<arg value="src/@{source}.s" />
@@ -88,20 +94,23 @@
 
 	<macrodef name="samagi">
 		<attribute name="game" />
-		<attribute name="silent" default="false" />
+		<attribute name="silent" default="" />
+		<attribute name="debug" default="" />
+		<attribute name="debugActions" default="" />
+		<attribute name="debugRoom" default="" />
 
 		<sequential>
 
 			<!-- first pass assembly of boot for symbols -->
-			<assemble source="boot" debug="true" />
+			<assemble source="boot" debug="@{debug}" />
 			<delete file="obj/boot" />
 
-			<assemble source="view" debug="true" silent="@{silent}" import-symbols="true" />
-			<assemble source="pic" debug="true" silent="@{silent}" import-symbols="true" />
-			<assemble source="snd" debug="true" silent="@{silent}" import-symbols="true" />
-			<assemble source="main" debug="true" silent="@{silent}" debug-actions="false" import-symbols="true" />
+			<assemble source="view" debug="@{debug}" silent="@{silent}" importSymbols="true" />
+			<assemble source="pic" debug="@{debug}" silent="@{silent}" importSymbols="true" />
+			<assemble source="snd" debug="@{debug}" silent="@{silent}" importSymbols="true" />
+			<assemble source="main" debug="@{debug}" silent="@{silent}" debugActions="@{debugActions}" debugRoom="@{debugRoom}" importSymbols="true" />
 
-			<create-disk game="@{game}" source="boot" additional.1="main" additional.2="view" additional.3="pic" additional.4="snd" silent="@{silent}" import-symbols="true" />
+			<create-disk game="@{game}" source="boot" additional.1="main" additional.2="view" additional.3="pic" additional.4="snd" silent="@{silent}" importSymbols="true" />
 
 			<concat destfile="obj/@{game}.map" append="true">
 				<fileset dir="obj" includes="view.map main.map snd.map pic.map" />
@@ -132,9 +141,21 @@
 
 	</target>
 
+	<target name="sq1 debug">
+
+		<samagi game="sq1" debugRoom="67" debugActions="true" />
+
+	</target>
+
 	<target name="sq2" description="Space Quest II: Vohaul's Revenge">
 
 		<samagi game="sq2" />
+
+	</target>
+
+	<target name="sq2 debug">
+
+		<samagi game="sq2" debugActions="true" />
 
 	</target>
 
