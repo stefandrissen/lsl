@@ -6,4 +6,17 @@
 
 logic.action.end.of.loop:
 
+if defined( strict )
+
     jp logic.action.nyi
+
+else
+
+    ld a,(ix)   ; oA
+    inc ix
+    ld b,(ix)   ; fB
+    inc ix
+
+    ret
+
+endif
