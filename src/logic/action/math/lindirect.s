@@ -19,10 +19,20 @@ logic.action.lindirectn:
 
 ;-------------------------------------------------------------------------------
 
-; lindirectn(vA,vB);
+; lindirectv(vA,vB);
 
 ; The value of vC (where C is the value of vA) is set to vB.
 
 logic.action.lindirectv:
 
-    jp logic.action.nyi
+    ld h,vars.high
+    ld l,(ix+1)     ; vB
+    ld a,(hl)
+
+    ld l,(ix+0)     ; vA
+    ld (hl),a
+
+    inc ix
+    inc ix
+
+    ret
