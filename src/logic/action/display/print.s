@@ -1,5 +1,3 @@
-action.print.v:
-
 ; print(n), print.v(n)
 ;   Opens a text window in the centre of the screen, where a message number n
 ;   (or vn) from the messages field of the current LOGIC resource is displayed.
@@ -31,17 +29,19 @@ action.print.v:
 ;   When you write your messages, remember that the interpreter wraps the text
 ;   between the lines as needed when the message is displayed.
 ;-------------------------------------------------------------------------------
+logic.action.print.v:
 
     ld h,vars.high
-    ld l,(ix+0)     ; variable
+    ld l,(ix)       ; variable
     ld a,(hl)
     jr @print.a
 
+;-------------------------------------------------------------------------------
 logic.action.print:
 
     ld a,(ix+0)     ; message
 
-@print.a:
+ @print.a:
 
     inc ix
 
@@ -78,9 +78,3 @@ logic.action.print:
 @text.invalid.message:
     defm "Invalid message: "
     defb 0
-
-;-------------------------------------------------------------------------------
-
-logic.action.print.v:
-
-    jp logic.action.nyi
