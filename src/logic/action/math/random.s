@@ -6,5 +6,29 @@
 
 logic.action.random:
 
-    jp logic.action.nyi
+    ld b,(ix)
+    inc ix
+    ld a,(ix)
+    ld c,a
+    inc ix
 
+    cp b
+    jr nc,@ok
+
+    ld b,0
+    ld c,0xff
+
+ @ok:
+
+    ld a,r
+    add a,b
+    cp c
+    jr nc,@-ok
+
+    ld h,vars.high
+    ld l,(ix)
+    inc ix
+
+    ld (hl),a
+
+    ret
