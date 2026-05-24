@@ -288,7 +288,9 @@ main.update.frames:
 
 var.frames: defb 0  ; increased by interrupt, flows over to var.seconds
 internal.var.blocks: defb 0
-internal.var.control: defb 1
+internal.var.control: defb enum.control.player
+    enum.control.program: equ 0
+    enum.control.player:  equ 1
 
     org $ - 0x8000
 

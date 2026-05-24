@@ -6,4 +6,7 @@
 
 logic.action.player.control:
 
-    jp logic.action.nyi
+    ld a,enum.control.player
+    ld (internal.var.control),a
+
+    ret

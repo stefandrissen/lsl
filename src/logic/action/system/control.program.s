@@ -11,6 +11,7 @@
 
 logic.action.program.control:
 
-    xor a
+    ld a,enum.control.program
     ld (internal.var.control),a
+
     ret
