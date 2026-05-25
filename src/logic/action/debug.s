@@ -1,38 +1,43 @@
 debug.enable:
 
     push af
-    xor a
-    ld (logic.action.debug),a
-    ld (logic.test.debug),a
+
+    xor a   ; nop
+    call @set.debug.smc
+
     pop af
+
     dec ix
     call logic.action.debug
     inc ix
     ret
 
+@set.debug.smc:
+
+    ld (@smc.debug.1),a
+    ld (@smc.debug.2),a
+    ret
+
 debug.disable:
 
     push af
+
     ld a,0xc9 ; ret
-  @set.debug:
-    ld (logic.action.debug),a
-    ld (logic.test.debug),a
+    call @set.debug.smc
+    call @debug.clear
 
     pop af
 
 logic.action.debug:
 
+   @smc.debug.1:
     ret
 
     push ix
     push bc
     push af
 
-    call util.print.reset
-    ld b,40
-    @loop:
-        call util.print.space
-        djnz @-loop
+    call @debug.clear
 
     call util.print.reset
     call util.print.ix
@@ -90,6 +95,7 @@ logic.action.debug:
 
 logic.test.debug:
 
+   @smc.debug.2:
     ret
 
     push ix
@@ -104,6 +110,34 @@ logic.test.debug:
     dec ix
     ld hl,@tests
     jr @-print
+
+@debug.clear:
+
+    push hl
+    push de
+    push bc
+
+    in a,(port.hmpr)
+    push af
+
+    in a,(port.vmpr)
+    and high.memory.page.mask
+    out (port.hmpr),a
+
+    ld hl,ptr.screen
+    ld de,ptr.screen + 1
+    ld bc,8 * 0x80 - 1
+    ld (hl),l
+    ldir
+
+    pop af
+    out (port.hmpr),a
+
+    pop bc
+    pop de
+    pop hl
+
+    ret
 
 @actions:
 

@@ -144,7 +144,7 @@
 
 	<target name="sq1 debug">
 
-		<samagi game="sq1" debug="true" debugActions="true" />
+		<samagi game="sq1" debug="true" debugActions="true" noSound="true" />
 
 	</target>
 
