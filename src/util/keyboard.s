@@ -32,19 +32,3 @@ util.keyboard.pause:
     xor 0xff
 
     ret
-
-
-util.keyboard.pause.esc:
-
-    call util.keyboard.pause
-
-    push af
-
-    ld a,keyboard.caps_tab_esc
-    in a,(port.status)
-    bit 5,a
-    call z,debug.disable
-
-    pop af
-
-    ret

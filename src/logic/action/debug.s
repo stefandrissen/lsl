@@ -8,7 +8,7 @@ debug.enable:
     pop af
 
     dec ix
-    call logic.action.debug
+    call @debug.show
     inc ix
     ret
 
@@ -30,8 +30,12 @@ debug.disable:
 
 logic.action.debug:
 
+    call @debug.keyboard.f9
+
    @smc.debug.1:
     ret
+
+   @debug.show:
 
     push ix
     push bc
@@ -91,7 +95,33 @@ logic.action.debug:
     cp 0xff ; if
     ret z
 
-    jp util.keyboard.pause.esc
+@debug.keyboard.pause:
+
+    call util.keyboard.pause
+
+    push af
+
+    ld a,keyboard.caps_tab_esc
+    in a,(port.status)
+    bit 5,a
+    call z,debug.disable
+
+    pop af
+
+    ret
+
+@debug.keyboard.f9:
+
+    push af
+
+    ld a,keyboard.f9_f8_f7
+    in a,(port.status)
+    bit 7,a
+    call z,debug.enable
+
+    pop af
+
+    ret
 
 logic.test.debug:
 
