@@ -3,16 +3,16 @@ util.keyboard.pause:
 
     push af
 
-@nokey:
+ @nokey:
     xor a
-    in a,(254)
+    in a,(port.keyboard)
     and %00011111
     cp %00011111
     jr nz,@nokey
 
-@anykey:
+ @anykey:
     xor a
-    in a,(254)
+    in a,(port.keyboard)
     and %00011111
     cp %00011111
     jr z,@anykey

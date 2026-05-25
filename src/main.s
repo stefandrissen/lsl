@@ -44,6 +44,7 @@
 
     include "memory.i"
     include "util/ports.i"
+    include "util/keyboard.i"
 
 ;===============================================================================
 
