@@ -543,7 +543,7 @@ logic.action.nyi:
 
 @text.action.nyi:
 
-    defm " ACTION NYI: "
+    defm " Action NYI"
     defb 0
 
 include "action/invalid.s"

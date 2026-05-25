@@ -36,7 +36,7 @@ logic.action.debug:
 
     call util.print.reset
     call util.print.ix
-    call util.print.space
+    call util.print.colon
     pop af
     push af
     call util.print.hex
@@ -84,10 +84,9 @@ logic.action.debug:
     pop ix
 
     cp 0xff ; if
+    ret z
 
-    call nz,util.keyboard.pause
-
-    ret
+    jp util.keyboard.pause.esc
 
 logic.test.debug:
 

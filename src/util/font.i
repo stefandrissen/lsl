@@ -8,10 +8,10 @@
     defw @P,@Q,@R,@S,@T,@U,@V,@W                                    ; 80
     defw @X,@Y,@Z,@bracket_open,@todo,@bracket_close,@todo,@todo    ; 88
     ; lowercase - same font as upper for now
-    defw @todo,@A,@B,@C,@D,@E,@F,@G                                 ; 96
-    defw @H,@I,@J,@K,@L,@M,@N,@O                                    ; 104
-    defw @P,@Q,@R,@S,@T,@U,@V,@W                                    ; 112
-    defw @X,@Y,@Z,@todo,@todo,@todo,@todo,@todo                     ; 120
+    defw @todo,@a_,@b_,@c_,@d_,@e_,@f_,@g_                          ; 96
+    defw @h_,@i_,@j_,@k_,@l_,@m_,@n_,@o_                            ; 104
+    defw @p_,@q_,@r_,@s_,@t_,@u_,@v_,@w_                            ; 112
+    defw @x_,@y_,@z_,@todo,@todo,@todo,@todo,@todo                  ; 120
 
  __: equ 0x00
  _X: equ 0x0f
@@ -471,12 +471,12 @@
     defb __,__,__
 @Z:
     defb __,__,__
-    defb __,__,__
-    defb __,__,__
-    defb __,__,__
-    defb __,__,__
-    defb __,__,__
-    defb __,__,__
+    defb XX,XX,X_
+    defb __,_X,__
+    defb __,X_,__
+    defb __,X_,__
+    defb _X,__,__
+    defb XX,XX,X_
     defb __,__,__
 
 @bracket_open:
@@ -497,4 +497,239 @@
     defb __,__,X_
     defb __,__,X_
     defb _X,XX,X_
+    defb __,__,__
+
+@a_:
+    defb __,__,__
+    defb __,__,__
+    defb _X,XX,__
+    defb __,__,X_
+    defb _X,XX,X_
+    defb X_,__,X_
+    defb _X,XX,X_
+    defb __,__,__
+@b_:
+    defb __,__,__
+    defb X_,__,__
+    defb X_,__,__
+    defb XX,XX,__
+    defb X_,__,X_
+    defb X_,__,X_
+    defb XX,XX,__
+    defb __,__,__
+@c_:
+    defb __,__,__
+    defb __,__,__
+    defb _X,XX,__
+    defb X_,__,X_
+    defb X_,__,__
+    defb X_,__,X_
+    defb _X,XX,__
+    defb __,__,__
+@d_:
+    defb __,__,__
+    defb __,__,X_
+    defb __,__,X_
+    defb _X,XX,X_
+    defb X_,__,X_
+    defb X_,__,X_
+    defb _X,XX,X_
+    defb __,__,__
+@e_:
+    defb __,__,__
+    defb __,__,__
+    defb _X,XX,__
+    defb X_,__,X_
+    defb XX,XX,__
+    defb X_,__,__
+    defb _X,XX,X_
+    defb __,__,__
+@f_:
+    defb __,__,__
+    defb __,XX,__
+    defb _X,__,__
+    defb XX,X_,__
+    defb _X,__,__
+    defb _X,__,__
+    defb _X,__,__
+    defb __,__,__
+@g_:
+    defb __,__,__
+    defb __,__,__
+    defb _X,XX,__
+    defb X_,__,X_
+    defb X_,__,X_
+    defb _X,XX,X_
+    defb __,__,X_
+    defb _X,XX,__
+@h_:
+    defb __,__,__
+    defb X_,__,__
+    defb X_,__,__
+    defb XX,XX,__
+    defb X_,__,X_
+    defb X_,__,X_
+    defb X_,__,X_
+    defb __,__,__
+@i_:
+    defb __,__,__
+    defb __,X_,__
+    defb __,__,__
+    defb _X,X_,__
+    defb __,X_,__
+    defb __,X_,__
+    defb _X,XX,__
+    defb __,__,__
+@j_:
+    defb __,__,__
+    defb __,__,X_
+    defb __,__,__
+    defb __,_X,X_
+    defb __,__,X_
+    defb __,__,X_
+    defb __,__,X_
+    defb _X,XX,__
+@k_:
+    defb __,__,__
+    defb X_,__,__
+    defb X_,X_,__
+    defb XX,__,__
+    defb X_,X_,__
+    defb X_,_X,__
+    defb X_,__,X_
+    defb __,__,__
+@l_:
+    defb __,__,__
+    defb _X,X_,__
+    defb __,X_,__
+    defb __,X_,__
+    defb __,X_,__
+    defb __,X_,__
+    defb _X,XX,X_
+    defb __,__,__
+@m_:
+    defb __,__,__
+    defb __,__,__
+    defb XX,_X,__
+    defb X_,X_,X_
+    defb X_,X_,X_
+    defb X_,X_,X_
+    defb X_,X_,X_
+    defb __,__,__
+@n_:
+    defb __,__,__
+    defb __,__,__
+    defb XX,XX,__
+    defb X_,__,X_
+    defb X_,__,X_
+    defb X_,__,X_
+    defb X_,__,X_
+    defb __,__,__
+@o_:
+    defb __,__,__
+    defb __,__,__
+    defb _X,XX,__
+    defb X_,__,X_
+    defb X_,__,X_
+    defb X_,__,X_
+    defb _X,XX,__
+    defb __,__,__
+@p_:
+    defb __,__,__
+    defb __,__,__
+    defb XX,XX,__
+    defb X_,__,X_
+    defb X_,__,X_
+    defb XX,XX,__
+    defb X_,__,__
+    defb X_,__,__
+@q_:
+    defb __,__,__
+    defb __,__,__
+    defb _X,XX,X_
+    defb X_,__,X_
+    defb X_,__,X_
+    defb X_,__,X_
+    defb _X,XX,X_
+    defb __,__,X_
+@r_:
+    defb __,__,__
+    defb __,__,__
+    defb X_,XX,__
+    defb XX,__,X_
+    defb X_,__,__
+    defb X_,__,__
+    defb X_,__,__
+    defb __,__,__
+@s_:
+    defb __,__,__
+    defb __,__,__
+    defb _X,XX,__
+    defb X_,__,__
+    defb _X,XX,__
+    defb __,__,X_
+    defb _X,XX,__
+    defb __,__,__
+@t_:
+    defb __,__,__
+    defb __,X_,__
+    defb _X,XX,X_
+    defb __,X_,__
+    defb __,X_,__
+    defb __,X_,__
+    defb __,_X,X_
+    defb __,__,__
+@u_:
+    defb __,__,__
+    defb __,__,__
+    defb X_,__,X_
+    defb X_,__,X_
+    defb X_,__,X_
+    defb X_,__,X_
+    defb _X,XX,__
+    defb __,__,__
+@v_:
+    defb __,__,__
+    defb __,__,__
+    defb X_,__,X_
+    defb X_,__,X_
+    defb X_,__,X_
+    defb _X,_X,__
+    defb __,X_,__
+    defb __,__,__
+@w_:
+    defb __,__,__
+    defb __,__,__
+    defb X_,__,X_
+    defb X_,__,X_
+    defb X_,X_,X_
+    defb XX,_X,X_
+    defb X_,__,X_
+    defb __,__,__
+@x_:
+    defb __,__,__
+    defb __,__,__
+    defb X_,__,X_
+    defb _X,_X,__
+    defb __,X_,__
+    defb _X,_X,__
+    defb X_,__,X_
+    defb __,__,__
+@y_:
+    defb __,__,__
+    defb __,__,__
+    defb X_,__,X_
+    defb X_,__,X_
+    defb X_,__,X_
+    defb _X,XX,X_
+    defb __,__,X_
+    defb _X,XX,__
+@z_:
+    defb __,__,__
+    defb __,__,__
+    defb XX,XX,X_
+    defb __,_X,__
+    defb __,X_,__
+    defb _X,__,__
+    defb XX,XX,X_
     defb __,__,__

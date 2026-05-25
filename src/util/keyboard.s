@@ -20,3 +20,17 @@ util.keyboard.pause:
     pop af
 
     ret
+
+util.keyboard.pause.esc:
+
+    push af
+
+    ld a,keyboard.caps_tab_esc
+    in a,(port.status)
+    bit 5,a
+    call z,debug.disable
+    call nz,util.keyboard.pause
+
+    pop af
+
+    ret

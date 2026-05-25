@@ -96,6 +96,10 @@ util.print.space:
     ld a," "
     jr util.print.char
 
+util.print.colon:
+    ld a,":"
+    jr util.print.char
+
 util.print.lf:
 
     ld a,chr_linefeed

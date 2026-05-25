@@ -4,18 +4,13 @@ error:
     call util.print.reset
 
     push hl
-    call util.print.ix
-    pop hl
-    call util.print.string
 
+    call util.print.ix
+    call util.print.colon
     ld a,(ix+0)
     call util.print.hex
 
-    call util.print.space
-
-    ld a,(ix+1)
-    call util.print.hex
-
-    call util.print.lf
+    pop hl
+    call util.print.string
 
     jp util.keyboard.pause
