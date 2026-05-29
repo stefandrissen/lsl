@@ -48,8 +48,6 @@ logic.execute:
 @loop:
 
     ld a,(ix)
-    or a
-    ret z
 
   if defined( debugActions )
     call logic.action.debug

@@ -1,3 +1,6 @@
 logic.action.return:
 
-    jp logic.action.nyi
+    pop af  ; toss call
+
+    ret
+
