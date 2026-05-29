@@ -60,7 +60,7 @@ logic.action.debug:
     add hl,de
     add hl,de
     ld e,(hl)
-    inc l
+    inc hl
     ld d,(hl)
     ex de,hl
 
@@ -138,7 +138,12 @@ logic.test.debug:
     push af
 
     dec ix
-    ld hl,@tests
+
+    ld hl,@debug.tests
+    dec b
+    jr nz,@-print
+
+    ld hl,@debug.tests.not
     jr @-print
 
 @debug.clear:
@@ -598,7 +603,7 @@ logic.test.debug:
  @else:             defm "else "
  @if:               defm "if "
 
-@tests:
+@debug.tests:
 
     defw @invalid
     defw @equaln
@@ -638,3 +643,44 @@ logic.test.debug:
  @obj.in.box:       defm "obj.in.box(o%A,%X,%Y,%X,%Y) "
  @center.posn:      defm "center.posn(o%A,%X,%Y,%X,%Y) "
  @right.posn:       defm "right.posn(o%A,%X,%Y,%X,%Y) "
+
+ @debug.tests.not:
+
+    defw @invalid
+    defw @not.equaln
+    defw @not.equalv
+    defw @not.lessn
+    defw @not.lessv
+    defw @not.greatern
+    defw @not.greaterv
+    defw @not.isset
+    defw @not.issetv
+    defw @not.has
+    defw @not.obj.in.room
+    defw @not.posn
+    defw @not.controller
+    defw @not.have.key
+    defw @not.said
+    defw @not.compare.strings
+    defw @not.obj.in.box
+    defw @not.center.posn
+    defw @not.right.posn
+
+ @not.equaln:           defm "v%A!=%B "
+ @not.equalv:           defm "v%A!=v%B "
+ @not.lessn:            defm "v%A>=%B "
+ @not.lessv:            defm "v%A>=v%B "
+ @not.greatern:         defm "v%A<=%B "
+ @not.greaterv:         defm "v%A<=v%B "
+ @not.isset:            defm "!f%A "
+ @not.issetv:           defm "!fv%A "
+ @not.has:              defm "!has(i%A) "
+ @not.obj.in.room:      defm "!obj.in.room(i%A,v%B) "
+ @not.posn:             defm "!posn(o%A,%X,%Y,%X,%Y) "
+ @not.controller:       defm "!controller(c%A) "
+ @not.have.key:         defm "!have.key() "
+ @not.said:             defm "!said(m%A) "
+ @not.compare.strings:  defm "!compare.strings(s%1,s%2) "
+ @not.obj.in.box:       defm "!obj.in.box(o%A,%X,%Y,%X,%Y) "
+ @not.center.posn:      defm "!center.posn(o%A,%X,%Y,%X,%Y) "
+ @not.right.posn:       defm "!right.posn(o%A,%X,%Y,%X,%Y) "
