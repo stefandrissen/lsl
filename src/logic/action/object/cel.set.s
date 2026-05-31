@@ -7,8 +7,11 @@
 
 logic.action.set.cel:
 
-    ld b,(ix)           ; oA
     ld c,(ix+1)         ; B
+
+   @set.cel:
+
+    ld b,(ix)           ; oA
 
     ld hl,view.set.cel
     call section.call.object
@@ -28,4 +31,8 @@ logic.action.set.cel:
 
 logic.action.set.cel.v:
 
-    jp logic.action.nyi
+    ld h,vars.high
+    ld l,(ix+1)     ; vB
+    ld c,(hl)
+
+    jr @set.cel

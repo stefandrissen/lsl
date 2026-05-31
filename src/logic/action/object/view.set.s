@@ -8,7 +8,7 @@ logic.action.set.view:
 
     ld c,(ix+1) ; B
 
-@set.view:
+   @set.view:
 
     ld b,(ix+0) ; oA
 

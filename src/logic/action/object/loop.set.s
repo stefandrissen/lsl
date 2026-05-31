@@ -7,8 +7,11 @@
 
 logic.action.set.loop:
 
-    ld b,(ix)   ; oA
     ld c,(ix+1) ; B
+
+   @set.loop:
+
+    ld b,(ix)   ; oA
 
     ld hl,view.set.loop
     call section.call.object
@@ -28,4 +31,8 @@ logic.action.set.loop:
 
 logic.action.set.loop.v:
 
-    jp logic.action.nyi
+    ld h,vars.high
+    ld l,(ix+1)     ; vB
+    ld c,(hl)
+
+    jr @set.loop
