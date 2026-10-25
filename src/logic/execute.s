@@ -16,6 +16,10 @@ logic.execute:
 ;   a = logic script #
 ;-------------------------------------------------------------------------------
 
+   if defined( debug )
+    call debug.pushScript
+   endif
+
     ld l,a
     ld h,0
     add hl,hl
