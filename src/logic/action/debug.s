@@ -1,43 +1,76 @@
-debug.enable:
+; logic/action/debug.s
+;
+; debug routines that can be triggered by compile options:
+;
+; - debug           press F9 to start debugger
+; - debugActions
+; - debugRoom       when room matches
+; - debugFlag       when flag changed
+;
+;-------------------------------------------------------------------------------
+
+debug.enableShow:
+
+    call debug.enable
 
     push af
 
-    xor a   ; nop
-    call @set.debug.smc
+    dec ix
+    ld a,(ix)
+    call @debug.show
+    inc ix
 
     pop af
 
-    dec ix
-    call @debug.show
-    inc ix
     ret
 
-@set.debug.smc:
+;-------------------------------------------------------------------------------
+debug.enable:
 
-    ld (@smc.debug.1),a
-    ld (@smc.debug.2),a
-    ret
+    push af
+    xor a       ; nop
+    jr @debug.smc
 
 debug.disable:
 
     push af
 
-    ld a,0xc9 ; ret
-    call @set.debug.smc
     call @debug.clear
+    ld a,0xc9   ; ret
+
+@debug.smc:
+
+    ld (@debug.show),a
+    ld (debug.LogicTest),a
 
     pop af
+    ret
 
-logic.action.debug:
+;-------------------------------------------------------------------------------
+if defined( debugFlag )
+
+ debug.FlagEnable:
+
+    dec ix
+    call debug.enableShow
+    inc ix
+    ret
+
+endif
+
+;-------------------------------------------------------------------------------
+debug.LogicAction:
+
+; a = action
 
     call @debug.keyboard.f9
 
-   @smc.debug.1:
-    ret
-
    @debug.show:
+    ret     ; smc
 
     push ix
+    push hl
+    push de
     push bc
     push af
 
@@ -90,6 +123,8 @@ logic.action.debug:
     ; call util.print.lf
     pop af
     pop bc
+    pop de
+    pop hl
     pop ix
 
     cp 0xff ; if
@@ -103,7 +138,7 @@ logic.action.debug:
 
     ld a,keyboard.caps_tab_esc
     in a,(port.status)
-    bit 5,a
+    bit 5,a ; esc
     call z,debug.disable
 
     pop af
@@ -116,19 +151,23 @@ logic.action.debug:
 
     ld a,keyboard.f9_f8_f7
     in a,(port.status)
-    bit 7,a
-    call z,debug.enable
+    bit 7,a ; f9
+    call z,debug.enableShow
 
     pop af
 
     ret
 
-logic.test.debug:
+;-------------------------------------------------------------------------------
+debug.LogicTest:
 
-   @smc.debug.2:
-    ret
+; a = logic test
+
+    ret ; smc
 
     push ix
+    push hl
+    push de
     push bc
     push af
 
@@ -487,7 +526,7 @@ logic.test.debug:
  @cycle.time:       defm "cycle.time(o%A,v%B) "
  @stop.motion:      defm "stop.motion(o%A) "
  @start.motion:     defm "start.motion(o%A) "
- @step.size:        defm "set.size(o%A,v%B) "
+ @step.size:        defm "step.size(o%A,v%B) "
 
  @step.time:        defm "step.time(o%A,v%B) "
  @move.obj:         defm "move.obj(o%A,%X,%Y,%S,f%D) "

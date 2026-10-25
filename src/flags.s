@@ -36,11 +36,21 @@ flag.isset:
 
 flag.reset:
 
+   if defined( debugFlag )
+    cp debugFlag
+    call z,debug.FlagEnable
+   endif
+
     ld c,%10000110          ; res n,(hl)
     jr @flag.operation
 
 ;===============================================================================
 flag.set:
+
+   if defined( debugFlag )
+    cp debugFlag
+    call z,debug.FlagEnable
+   endif
 
     ld c,%11000110          ; set n,(hl)
     jr @flag.operation

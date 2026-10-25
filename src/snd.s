@@ -21,27 +21,26 @@ snd.restore.interrupts:
     jp @snd.restore.interrupts
 
 sounds:
-sounds.high:    equ sounds / &100
-
-sound:
-
-    org 0
+sounds.high:    equ sounds / 0x100
 
     @no:                defb    0
+
+    @voice.1:           defb    0
+    @voice.2:           defb    0
+    @voice.3:           defb    0
+    @noise:             defb    0
 
     @voice.1.ptr:       defw    0
     @voice.2.ptr:       defw    0
     @voice.3.ptr:       defw    0
     @noise.ptr:         defw    0
 
-    @voice.1.duration:  defw    1
+    @voice.1.duration:  defw    0
     @voice.2.duration:  defw    0
     @voice.3.duration:  defw    0
     @noise.duration:    defw    0
 
     @flagdone:          defb    0   ; flagdone
-
-    org $ + sound
 
 ;===============================================================================
 @interrupt.lines:
@@ -101,7 +100,7 @@ if defined( noSound )
     ret
 endif
 
-    ld a,(sound+@no)
+    ld a,(@no)
     or a
     ret z
 
@@ -112,27 +111,57 @@ endif
 
     ld ix,@saa
 
+    ld a,(@voice.1)
+    or a
+    call nz,@update.voice.1
+
+    ld a,(@voice.2)
+    or a
+    call nz,@update.voice.2
+
+    ld a,(@voice.3)
+    or a
+    call nz,@update.voice.3
+
+    ld a,(@noise)
+    or a
+    call nz,@update.noise
+
+    ld bc,port.sound.data
+    ld hl,@saa
+
+    for 26, outi
+
+    pop bc
+    pop de
+    pop hl
+    pop ix
+
+    ret
+
     ;-----------------------------------
     ; voice 1
 
-    ld hl,(sound+@voice.1.duration)
+@update.voice.1:
+
+    ld hl,(@voice.1.duration)
     dec hl
-    ld (sound+@voice.1.duration),hl
+    ld (@voice.1.duration),hl
 
     ld a,h
     or l
-    jr nz,@no.change.1
+    ret nz
 
-    ld hl,(sound+@voice.1.ptr)
+    ld hl,(@voice.1.ptr)
 
     ld e,(hl)
     inc hl
     ld a,e
-    ld (sound+@voice.1.duration+0),a
+    ld (@voice.1.duration+0),a
     ld d,(hl)
     inc hl
     ld a,d
-    ld (sound+@voice.1.duration+1),a
+    ld (@voice.1.duration+1),a
 
     ld a,0xff
     cp d
@@ -172,41 +201,53 @@ endif
 
     ld (ix+@amplitude.0),a
 
-    ld (sound+@voice.1.ptr),hl
+    ld (@voice.1.ptr),hl
 
+    ; Octave 8 marks a silent note; keep the voice active for its next note.
     bit 3,(ix+@octave.1.0)
-    jr nz,@silent.1
-    set 0,(ix+@frequency.enable)
-    jr @continue.1
+    jr nz,@silent.note.1
 
-@silent.1:
+    set 0,(ix+@frequency.enable)
+
+    ret
+
+@silent.note.1:
+
     res 0,(ix+@frequency.enable)
 
-@continue.1:
+    ret
 
-@no.change.1:
+@silent.1:
+
+    xor a
+    ld (@voice.1),a
+
+    res 0,(ix+@frequency.enable)
+
+    jp @check.done
 
     ;-----------------------------------
     ; voice 2
+@update.voice.2:
 
-    ld hl,(sound+@voice.2.duration)
+    ld hl,(@voice.2.duration)
     dec hl
-    ld (sound+@voice.2.duration),hl
+    ld (@voice.2.duration),hl
 
     ld a,h
     or l
-    jr nz,@no.change.2
+    ret nz
 
-    ld hl,(sound+@voice.2.ptr)
+    ld hl,(@voice.2.ptr)
 
     ld e,(hl)
     inc hl
     ld a,e
-    ld (sound+@voice.2.duration+0),a
+    ld (@voice.2.duration+0),a
     ld d,(hl)
     inc hl
     ld a,d
-    ld (sound+@voice.2.duration+1),a
+    ld (@voice.2.duration+1),a
 
     ld a,0xff
     cp d
@@ -253,41 +294,53 @@ endif
 
     ld (ix+@amplitude.1),a
 
-    ld (sound+@voice.2.ptr),hl
+    ld (@voice.2.ptr),hl
 
     bit 7,(ix+@octave.1.0)
-    jr nz,@silent.2
-    set 1,(ix+@frequency.enable)
-    jr @continue.2
+    jr nz,@silent.note.2
 
-@silent.2:
+    set 1,(ix+@frequency.enable)
+
+    ret
+
+@silent.note.2:
+
     res 1,(ix+@frequency.enable)
 
-@continue.2:
+    ret
 
-@no.change.2:
+@silent.2:
+
+    xor a
+    ld (@voice.2),a
+
+    res 1,(ix+@frequency.enable)
+
+    jp @check.done
 
     ;-----------------------------------
     ; voice 3
 
-    ld hl,(sound+@voice.3.duration)
+@update.voice.3:
+
+    ld hl,(@voice.3.duration)
     dec hl
-    ld (sound+@voice.3.duration),hl
+    ld (@voice.3.duration),hl
 
     ld a,h
     or l
-    jr nz,@no.change.3
+    ret nz
 
-    ld hl,(sound+@voice.3.ptr)
+    ld hl,(@voice.3.ptr)
 
     ld e,(hl)
     inc hl
     ld a,e
-    ld (sound+@voice.3.duration+0),a
+    ld (@voice.3.duration+0),a
     ld d,(hl)
     inc hl
     ld a,d
-    ld (sound+@voice.3.duration+1),a
+    ld (@voice.3.duration+1),a
 
     ld a,0xff
     cp d
@@ -327,41 +380,53 @@ endif
 
     ld (ix+@amplitude.2),a
 
-    ld (sound+@voice.3.ptr),hl
+    ld (@voice.3.ptr),hl
 
     bit 3,(ix+@octave.3.2)
-    jr nz,@silent.3
-    set 2,(ix+@frequency.enable)
-    jr @continue.3
+    jr nz,@silent.note.3
 
-@silent.3:
+    set 2,(ix+@frequency.enable)
+
+    ret
+
+@silent.note.3:
+
     res 2,(ix+@frequency.enable)
 
-@continue.3:
+    ret
 
-@no.change.3:
+@silent.3:
+
+    xor a
+    ld (@voice.3),a
+
+    res 2,(ix+@frequency.enable)
+
+    jr @check.done
 
     ;-----------------------------------
     ; noise
 
-    ld hl,(sound+@noise.duration)
+@update.noise:
+
+    ld hl,(@noise.duration)
     dec hl
-    ld (sound+@noise.duration),hl
+    ld (@noise.duration),hl
 
     ld a,h
     or l
-    jr nz,@no.change.4
+    ret nz
 
-    ld hl,(sound+@noise.ptr)
+    ld hl,(@noise.ptr)
 
     ld e,(hl)
     inc hl
     ld a,e
-    ld (sound+@noise.duration+0),a
+    ld (@noise.duration+0),a
     ld d,(hl)
     inc hl
     ld a,d
-    ld (sound+@noise.duration+1),a
+    ld (@noise.duration+1),a
 
     ld a,0xff
     cp d
@@ -412,32 +477,39 @@ endif
 
     ld (ix+@amplitude.3),a
 
-    ld (sound+@noise.ptr),hl
+    ld (@noise.ptr),hl
 
-    bit 3,(ix+@octave.3.2)
-
-    jr nz,@silent.3
+;    bit 3,(ix+@octave.3.2)
+;    jr nz,@silent.4
     set 3,(ix+@noise.enable)
-    jr @continue.4
+    ret
 
 @silent.4:
+
+    xor a
+    ld (@noise),a
+
     res 3,(ix+@noise.enable)
 
-@continue.4:
+;-------------------------------------------------------------------------------
+@check.done:
 
-@no.change.4:
+    ld hl,@voice.1
+    ld a,(hl)
+    inc hl
+    or (hl) ; .2
+    inc hl
+    or (hl) ; .3
+    inc hl
+    or (hl) ; noise
 
-    ld bc,port.sound.data
-    ld hl,@saa
+    ret nz
 
-    for 26, outi
+    ld (@no),a
 
-    pop bc
-    pop de
-    pop hl
-    pop ix
-
-    ret
+    ld a,(@flagdone)
+    ld c,a
+    jp section.call.main.flag.set
 
 ;-------------------------------------------------------------------------------
 @saa:
@@ -531,35 +603,40 @@ snd.sound:
 ;-------------------------------------------------------------------------------
 
     ld a,c
-    ld (sound+@flagdone),a
+    ld (@flagdone),a
 
     ld a,b
-    ld (sound+@no),a
+    ld (@no),a
+
+    ld (@voice.1),a
+    ld (@voice.2),a
+    ld (@voice.3),a
+    ld (@noise),a
 
     call @get.ptr.snd.header.hl
 
     ld a,1
     call @get.voice.ptr.de
-    ld (sound+@voice.1.ptr),de
+    ld (@voice.1.ptr),de
 
     ld a,2
     call @get.voice.ptr.de
-    ld (sound+@voice.2.ptr),de
+    ld (@voice.2.ptr),de
 
     ld a,3
     call @get.voice.ptr.de
-    ld (sound+@voice.3.ptr),de
+    ld (@voice.3.ptr),de
 
     ld a,4
     call @get.voice.ptr.de
-    ld (sound+@noise.ptr),de
+    ld (@noise.ptr),de
 
     ; set all durations to 1, notes will be picked up on first play
     ld hl,1
-    ld (sound+@voice.1.duration),hl
-    ld (sound+@voice.2.duration),hl
-    ld (sound+@voice.3.duration),hl
-    ld (sound+@noise.duration),hl
+    ld (@voice.1.duration),hl
+    ld (@voice.2.duration),hl
+    ld (@voice.3.duration),hl
+    ld (@noise.duration),hl
 
     ld bc,port.sound.data
     ld hl,@saa.init

@@ -170,6 +170,10 @@ object.locations.high:  equ object.locations \ 0x100
     pop af
     out (port.hmpr),a
 
+   if defined( debugActions )
+    call debug.enable
+   endif
+
     ld a,flag.room_script_first_time
     call flag.set
 

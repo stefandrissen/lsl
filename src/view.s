@@ -956,7 +956,7 @@ view.draw:
     jr nz,@not.end.of.loop
 
     ld c,(iy+object.loop.flag)
-    call @view.set.flag
+    call section.call.main.flag.set
 
    @not.end.of.loop:
     ld a,0
@@ -1128,7 +1128,7 @@ view.draw:
 @step.size.not.set:
 
     ld c,(iy+object.move.doneflag)
-    jp @view.set.flag
+    jp section.call.main.flag.set
 
 ;-------------------------------------------------------------------------------
 @change.loop:
@@ -1196,43 +1196,6 @@ view.draw:
     cp c
     ret c
     jp view.set.loop
-
- ;-------------------------------------------------------------------------------
-@view.set.flag:
-
- ;  input
- ;  - c = flag to set
-
- ;-------------------------------------------------------------------------------
-    in a,(port.hmpr)
-    push af
-
-    ld a,page.main
-    out (port.hmpr),a
-
-    ld a,c
-
-    ld h,main.flags / 0x100 + 0x80
-
-    ld l,a
-    srl l
-    srl l
-    srl l
-
-    and %00000111
-    rlca
-    rlca
-    rlca
-    or %11000110          ; set n,(hl)
-    ld (@smc.bit+1),a
-
-@smc.bit:
-    set 0,(hl)  ; or res n,(hl) or bit n,(hl)
-
-    pop af
-    out (port.hmpr),a
-
-    ret
 
 ;-------------------------------------------------------------------------------
 @find.direction:

@@ -123,6 +123,62 @@ non.maskable.interrupt:
 
     ret
 
+ ;===============================================================================
+section.call.main.flag.set:
+ ;   change bank AB to main
+
+ ; input
+ ;   c = flag
+
+ ; called by sound done or view done
+ ;-------------------------------------------------------------------------------
+
+    push bc
+
+    in a,(port.lmpr)
+    ld b,a
+
+    in a,(port.hmpr)
+    push af
+
+    ld a,page.main | low.memory.ram.0
+    out (port.lmpr),a
+
+    push bc
+
+    ld a,c
+
+   if defined( debugFlag )
+    push ix
+    ld ix,debugReturn + 2
+   endif
+
+   if defined( flag.set )
+    call flag.set
+   else
+    oops: jp oops
+   endif
+
+   if defined( debugFlag )
+    pop ix
+   endif
+
+    pop bc
+
+    ld a,b
+    out (port.lmpr),a
+
+    pop af
+    out (port.hmpr),a
+
+    pop bc
+
+    ret
+
+   if defined( debugFlag )
+    debugReturn: defb 0  ; return()
+   endif
+
 ;-------------------------------------------------------------------------------
 
     assert $ <= stack.top - stack.size

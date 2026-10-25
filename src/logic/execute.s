@@ -50,7 +50,7 @@ logic.execute:
     ld a,(ix)
 
   if defined( debugActions )
-    call logic.action.debug
+    call debug.LogicAction
   endif
 
     inc ix
@@ -516,7 +516,7 @@ logic.call.test:
   endif
 
   if defined( debugActions )
-    call logic.test.debug
+    call debug.LogicTest
   endif
 
     ld hl,@tests

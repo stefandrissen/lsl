@@ -1,4 +1,4 @@
-; sound(SOUNDNO,fDONEFLAG); TODO
+; sound(SOUNDNO,fDONEFLAG);
 
 ; Sound SOUNDNO is played. fDONEFLAG is reset when the command is issued, and
 ; set when the sound finishes playing or is stopped with the stop.sound command.
@@ -19,6 +19,7 @@ logic.action.sound:
     ld a,page.log
     out (port.hmpr),a
 
+    ld a,(ix+1)
     call flag.reset
 
     inc ix

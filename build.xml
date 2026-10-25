@@ -15,6 +15,7 @@
 		<attribute name="debug" default="" />
 		<attribute name="debugActions" default="" />
 		<attribute name="debugRoom" default="" />
+		<attribute name="debugFlag" default="" />
 		<attribute name="noSound" default="" />
 		<sequential xmlns:if="ant:if">
 
@@ -25,6 +26,7 @@
 				<arg line="-D debug" if:true="@{debug}" />
 				<arg line="-D debugActions" if:true="@{debugActions}" />
 				<arg line="-D debugRoom=@{debugRoom}" unless:blank="@{debugRoom}" />
+				<arg line="-D debugFlag=@{debugFlag}" unless:blank="@{debugFlag}" />
 				<arg line="-D noSound" if:true="@{noSound}" />
 				<arg value="--importfile=obj/symbols" if:true="@{importSymbols}" />
 				<arg value="--exportfile=obj/symbols" />
@@ -93,12 +95,14 @@
 		<attribute name="debug" default="" />
 		<attribute name="debugActions" default="" />
 		<attribute name="debugRoom" default="" />
+		<attribute name="debugFlag" default="" />
 
 		<sequential>
 
 			<local name="debug" />
-			<property name="debug" value="true" if:true="@{debugRoom}" />
 			<property name="debug" value="true" if:true="@{debugActions}" />
+			<property name="debug" value="true" if:true="@{debugRoom}" />
+			<property name="debug" value="true" if:true="@{debugFlag}" />
 			<property name="debug" value="true" if:true="@{debug}" />
 			<property name="debug" value="false" />
 
@@ -109,7 +113,7 @@
 			<assemble source="view" debug="${debug}" noSound="@{noSound}" importSymbols="true" />
 			<assemble source="pic" debug="${debug}" noSound="@{noSound}" importSymbols="true" />
 			<assemble source="snd" debug="${debug}" noSound="@{noSound}" importSymbols="true" />
-			<assemble source="main" debug="${debug}" noSound="@{noSound}" debugActions="@{debugActions}" debugRoom="@{debugRoom}" importSymbols="true" />
+			<assemble source="main" debug="${debug}" noSound="@{noSound}" debugActions="@{debugActions}" debugRoom="@{debugRoom}" debugFlag="@{debugFlag}" importSymbols="true" />
 
 			<create-disk game="@{game}" source="boot" additional.1="main" additional.2="view" additional.3="pic" additional.4="snd" noSound="@{noSound}" importSymbols="true" />
 
@@ -130,7 +134,13 @@
 
 	</target>
 
-	<target name="lllll no sound" description="Leisure Suit Larry In The Land Of The Lounge Lizards">
+	<target name="lllll debugActions" description="">
+
+		<samagi game="lllll" debugActions="true" />
+
+	</target>
+
+	<target name="lllll noSound" description="">
 
 		<samagi game="lllll" noSound="true" />
 
@@ -142,9 +152,9 @@
 
 	</target>
 
-	<target name="sq1 debug">
+	<target name="sq1 debugFlag 31">
 
-		<samagi game="sq1" debug="true" debugActions="true" noSound="true" />
+		<samagi game="sq1" debugActions="true" debugFlag="31" />
 
 	</target>
 
@@ -154,7 +164,7 @@
 
 	</target>
 
-	<target name="sq2 debug">
+	<target name="sq2 debugActions">
 
 		<samagi game="sq2" debugActions="true" />
 

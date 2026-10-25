@@ -17,6 +17,8 @@
 ; k. Flag 5 (new_room) is set (this is reset after the first cycle in the new room)
 ; l. Execution jumps to the start of logic 0
 
+; TODO: https://www.agiwiki.sierrahelp.com/index.php/New.room
+
 logic.action.new.room:
 
     ld a,(ix)       ; ROOMNO
@@ -29,7 +31,7 @@ logic.action.new.room:
     dec ix
     cp debugRoom
     ld a,(ix)
-    call z,debug.enable
+    call z,debug.enableShow
     pop ix
     pop af
    endif
