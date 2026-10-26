@@ -108,6 +108,9 @@ debug.LogicAction:
         cp "`"
         jr z,@end
 
+        cp "&"
+        call z,@multiArgument
+
         cp "%"
         jr nz,@normal
 
@@ -218,6 +221,38 @@ debug.LogicTest:
     pop hl
 
     ret
+
+;-------------------------------------------------------------------------------
+@multiArgument:
+
+        inc hl
+        inc ix
+        ld b,(ix)   ; # arguments
+
+      @loopSaid:
+        ld a,(ix)
+        inc ix
+        call util.print.hex ; pointer to words.tok
+        ld a,(ix)
+        inc ix
+        call util.print.hex ; pointer to words.tok
+
+        ld a,b
+        cp 1
+        jr z,@lastArgument
+        ld a,","
+        call util.print.char
+        ld a,"m"
+        call util.print.char
+       @lastArgument:
+
+        djnz @-loopSaid
+
+        ld a,(hl)
+
+        ret
+
+;-------------------------------------------------------------------------------
 
 @actions:
 
@@ -683,7 +718,7 @@ debug.LogicTest:
  @posn:             defm "posn(o%A,%X,%Y,%X,%Y)`"
  @controller:       defm "controller(c%A)`"
  @have.key:         defm "have.key()`"
- @said:             defm "said(m%A)`"
+ @said:             defm "said(m&)`"    ; has n arguments
  @compare.strings:  defm "compare.strings(s%1,s%2)`"
  @obj.in.box:       defm "obj.in.box(o%A,%X,%Y,%X,%Y)`"
  @center.posn:      defm "center.posn(o%A,%X,%Y,%X,%Y)`"
