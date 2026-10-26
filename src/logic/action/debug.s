@@ -450,7 +450,7 @@ debug.LogicTest:
     assert $ - @actions == 0x100 * 2
 
  @return:       defm "return()`"
- @increment:    defm "increment(v%A)`"
+ @increment:    defm "v%A++`"
  @decrement:    defm "decrement(v%A)`"
  @assignn:      defm "v%A = %B`" ; "assign(v%A,%B)`"
  @assignv:      defm "v%A = v%B`" ; "assign(v%A,v%B)`"
