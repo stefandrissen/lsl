@@ -1,6 +1,6 @@
 
     defw @space,@exclaim,@todo,@todo,@todo,@percent,@todo,@todo     ; 32
-    defw @par_open,@par_close,@todo,@todo,@comma,@minus,@dot,@slash ; 40
+    defw @par_open,@par_close,@todo,@plus,@comma,@minus,@dot,@slash ; 40
     defw @0,@1,@2,@3,@4,@5,@6,@7                                    ; 48
     defw @8,@9,@colon,@todo,@lt,@eq,@gt,@question                   ; 56
     defw @todo,@A,@B,@C,@D,@E,@F,@G                                 ; 64
@@ -72,6 +72,15 @@
     defb _X,__,__
     defb X_,__,__
     defb __,__,__
+@plus:
+    defb __,__,__
+    defb __,X_,__
+    defb __,X_,__
+    defb XX,XX,X_
+    defb __,X_,__
+    defb __,X_,__
+    defb __,__,__
+    defb __,__,__
 @comma:
     defb __,__,__
     defb __,__,__
@@ -111,10 +120,10 @@
 @0:
     defb __,__,__
     defb _X,XX,__
-    defb X_,__,X_
-    defb X_,__,X_
-    defb X_,__,X_
-    defb X_,__,X_
+    defb X_,_X,X_
+    defb X_,X_,X_
+    defb X_,X_,X_
+    defb XX,__,X_
     defb _X,XX,__
     defb __,__,__
 @1:
