@@ -451,7 +451,7 @@ debug.LogicTest:
 
  @return:       defm "return()`"
  @increment:    defm "v%A++`"
- @decrement:    defm "decrement(v%A)`"
+ @decrement:    defm "v%A--`"
  @assignn:      defm "v%A = %B`" ; "assign(v%A,%B)`"
  @assignv:      defm "v%A = v%B`" ; "assign(v%A,v%B)`"
  @addn:         defm "add(v%A,%B)`"
